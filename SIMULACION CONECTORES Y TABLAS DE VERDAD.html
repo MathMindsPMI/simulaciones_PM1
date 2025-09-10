@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Conectores Lógicos - Matemáticas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#FF6B6B',
+                        success: '#4ECDC4',
+                        warning: '#FFE66D'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(93, 92, 222, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(93, 92, 222, 0.8); }
+        }
+        .pulse-glow { animation: pulse-glow 2s infinite; }
+        
+        @keyframes bounce-in {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(5deg); }
+            70% { transform: scale(0.9) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .bounce-in { animation: bounce-in 0.6s ease-out; }
+        
+        .circuit-line {
+            stroke: #5D5CDE;
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .logic-gate {
+            transition: all 0.3s ease;
+        }
+        
+        .logic-gate:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(93, 92, 222, 0.5));
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div class="min-h-screen p-4">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-2">
+                🧠 Simulador de Conectores Lógicos
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                ¡Aprende lógica matemática de manera divertida e interactiva!
+            </p>
+            <div class="mt-4 flex justify-center items-center space-x-4">
+                <div class="bg-primary text-white px-4 py-2 rounded-full">
+                    Puntos: <span id="score" class="font-bold">0</span>
+                </div>
+                <div class="bg-success text-white px-4 py-2 rounded-full">
+                    Nivel: <span id="level" class="font-bold">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex flex-wrap justify-center mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+            <button onclick="showTab('simulator')" id="tab-simulator" class="tab-button active px-4 py-2 rounded-lg mx-1 mb-1 font-medium transition-all">
+                🔧 Simulador
+            </button>
+            <button onclick="showTab('truth-table')" id="tab-truth-table" class="tab-button px-4 py-2 rounded-lg mx-1 mb-1 font-medium transition-all">
+                📊 Tablas de Verdad
+            </button>
+            <button onclick="showTab('exercises')" id="tab-exercises" class="tab-button px-4 py-2 rounded-lg mx-1 mb-1 font-medium transition-all">
+                🎯 Ejercicios
+            </button>
+            <button onclick="showTab('proposition')" id="tab-proposition" class="tab-button px-4 py-2 rounded-lg mx-1 mb-1 font-medium transition-all">
+                ✍️ Evaluador
+            </button>
+            <button onclick="showTab('theory')" id="tab-theory" class="tab-button px-4 py-2 rounded-lg mx-1 mb-1 font-medium transition-all">
+                📚 Teoría
+            </button>
+        </div>
+
+        <!-- Simulator Tab -->
+        <div id="simulator-tab" class="tab-content">
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Circuit Builder -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                        🔌 Constructor de Circuitos
+                    </h3>
+                    
+                    <!-- Logic Gate Palette -->
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Conectores Disponibles:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="selectGate('AND')" class="gate-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                                ∧ AND
+                            </button>
+                            <button onclick="selectGate('OR')" class="gate-btn bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                                ∨ OR
+                            </button>
+                            <button onclick="selectGate('NOT')" class="gate-btn bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                                ¬ NOT
+                            </button>
+                            <button onclick="selectGate('IMPL')" class="gate-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                                → IMPLICA
+                            </button>
+                            <button onclick="selectGate('BICOND')" class="gate-btn bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                                ↔ BICONDICIONAL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Circuit Canvas -->
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-4 min-h-64 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                        <svg id="circuit-canvas" width="100%" height="300" class="overflow-visible">
+                            <!-- Input nodes -->
+                            <circle id="input-p" cx="50" cy="100" r="20" fill="#4ECDC4" class="cursor-pointer logic-gate" onclick="toggleInput('p')"/>
+                            <text x="50" y="105" text-anchor="middle" class="fill-white font-bold">P</text>
+                            
+                            <circle id="input-q" cx="50" cy="200" r="20" fill="#4ECDC4" class="cursor-pointer logic-gate" onclick="toggleInput('q')"/>
+                            <text x="50" y="205" text-anchor="middle" class="fill-white font-bold">Q</text>
+                            
+                            <!-- Output node -->
+                            <circle id="output" cx="400" cy="150" r="25" fill="#FF6B6B" class="logic-gate"/>
+                            <text x="400" y="155" text-anchor="middle" class="fill-white font-bold">R</text>
+                            
+                            <!-- Logic gate will be placed here -->
+                            <g id="logic-gate-container"></g>
+                        </svg>
+                    </div>
+
+                    <!-- Input Controls -->
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Valor P:</div>
+                            <div id="p-value" class="text-2xl font-bold text-gray-800 dark:text-white">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Valor Q:</div>
+                            <div id="q-value" class="text-2xl font-bold text-gray-800 dark:text-white">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Resultado:</div>
+                            <div id="result-value" class="text-3xl font-bold text-primary">?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Examples -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                        🎮 Ejemplos Interactivos
+                    </h3>
+                    
+                    <div id="example-container" class="space-y-4">
+                        <!-- Dynamic examples will be generated here -->
+                    </div>
+                    
+                    <button onclick="generateNewExample()" class="w-full mt-4 bg-primary hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-all">
+                        🎲 Generar Nuevo Ejemplo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Truth Table Tab -->
+        <div id="truth-table-tab" class="tab-content hidden">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                    📊 Generador de Tablas de Verdad
+                </h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Selecciona el conector lógico:
+                    </label>
+                    <select id="truth-table-selector" onchange="generateTruthTable()" class="w-full md:w-auto px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        <option value="AND">∧ Conjunción (AND)</option>
+                        <option value="OR">∨ Disyunción (OR)</option>
+                        <option value="NOT">¬ Negación (NOT)</option>
+                        <option value="IMPL">→ Implicación</option>
+                        <option value="BICOND">↔ Bicondicional</option>
+                    </select>
+                </div>
+                
+                <div id="truth-table-container" class="overflow-x-auto">
+                    <!-- Truth table will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercises Tab -->
+        <div id="exercises-tab" class="tab-content hidden">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                    🎯 Ejercicios Prácticos
+                </h3>
+                
+                <div id="exercise-container">
+                    <!-- Current exercise will be displayed here -->
+                </div>
+                
+                <div class="mt-6 flex justify-center space-x-4">
+                    <button onclick="generateExercise()" class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all">
+                        🎲 Nuevo Ejercicio
+                    </button>
+                    <button onclick="checkAnswer()" class="bg-success hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-all">
+                        ✅ Verificar Respuesta
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proposition Evaluator Tab -->
+        <div id="proposition-tab" class="tab-content hidden">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                    ✍️ Evaluador de Proposiciones
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    Escribe una proposición lógica y la aplicación evaluará si está correcta. Usa P y Q como variables, y los símbolos: ∧ (Y), ∨ (O), ¬ (NO), → (implica), ↔ (si y solo si)
+                </p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Input Section -->
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-6">
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-4">📝 Escribe tu proposición:</h4>
+                        
+                        <!-- Values Setting -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Asigna valores a las variables:
+                            </label>
+                            <div class="flex space-x-4 mb-4">
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-gray-700 dark:text-gray-300">P:</span>
+                                    <select id="prop-p-value" class="px-3 py-1 text-base border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                        <option value="true">Verdadero (1)</option>
+                                        <option value="false">Falso (0)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-gray-700 dark:text-gray-300">Q:</span>
+                                    <select id="prop-q-value" class="px-3 py-1 text-base border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                                        <option value="true">Verdadero (1)</option>
+                                        <option value="false">Falso (0)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Proposition Input -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Tu proposición:
+                            </label>
+                            <textarea id="proposition-input" 
+                                placeholder="Ejemplo: P ∧ Q
+P → Q
+¬P ∨ Q
+P ↔ Q"
+                                class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 resize-none" 
+                                rows="3"></textarea>
+                        </div>
+                        
+                        <!-- Symbol Helper -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Símbolos disponibles:
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="insertSymbol('∧')" class="px-3 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded text-sm hover:bg-blue-200 dark:hover:bg-blue-700 transition-all">
+                                    ∧ (Y)
+                                </button>
+                                <button onclick="insertSymbol('∨')" class="px-3 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-sm hover:bg-green-200 dark:hover:bg-green-700 transition-all">
+                                    ∨ (O)
+                                </button>
+                                <button onclick="insertSymbol('¬')" class="px-3 py-1 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 rounded text-sm hover:bg-red-200 dark:hover:bg-red-700 transition-all">
+                                    ¬ (NO)
+                                </button>
+                                <button onclick="insertSymbol('→')" class="px-3 py-1 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-sm hover:bg-purple-200 dark:hover:bg-purple-700 transition-all">
+                                    → (implica)
+                                </button>
+                                <button onclick="insertSymbol('↔')" class="px-3 py-1 bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm hover:bg-orange-200 dark:hover:bg-orange-700 transition-all">
+                                    ↔ (si y solo si)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Expected Result -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                ¿Cuál crees que será el resultado?
+                            </label>
+                            <div class="flex space-x-4">
+                                <button onclick="selectExpectedResult(true)" id="expected-true" class="expected-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-all">
+                                    Verdadero (1)
+                                </button>
+                                <button onclick="selectExpectedResult(false)" id="expected-false" class="expected-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                                    Falso (0)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button onclick="evaluateProposition()" class="w-full bg-primary hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-all">
+                            🔍 Evaluar Proposición
+                        </button>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div class="bg-white dark:bg-gray-700 rounded-lg p-6">
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-4">📊 Resultados:</h4>
+                        <div id="proposition-results" class="space-y-4">
+                            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                                Escribe una proposición y haz clic en "Evaluar" para ver los resultados
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Examples Section -->
+                <div class="mt-6 bg-white dark:bg-gray-700 rounded-lg p-6">
+                    <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-4">💡 Ejemplos para practicar:</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
+                            <div class="font-medium text-gray-800 dark:text-white">Básico:</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">P ∧ Q (P y Q)</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
+                            <div class="font-medium text-gray-800 dark:text-white">Negación:</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">¬P ∨ Q (no P o Q)</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
+                            <div class="font-medium text-gray-800 dark:text-white">Implicación:</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">P → ¬Q (si P entonces no Q)</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
+                            <div class="font-medium text-gray-800 dark:text-white">Complejo:</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">(P ∧ Q) → (P ∨ Q)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Tab -->
+        <div id="theory-tab" class="tab-content hidden">
+            <div class="space-y-6">
+                <!-- Logic Connectors Theory Section -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+                        📚 Teoría de Conectores Lógicos
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">∧ Conjunción (AND)</h4>
+                            <p class="text-gray-700 dark:text-gray-300">La conjunción es verdadera solo cuando ambas proposiciones son verdaderas.</p>
+                            <div class="mt-2 text-sm bg-blue-50 dark:bg-blue-900 p-2 rounded">
+                                <strong>Ejemplo:</strong> "Llueve Y hace frío" es verdadero solo si llueve y también hace frío.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-xl font-bold text-green-600 dark:text-green-400 mb-2">∨ Disyunción (OR)</h4>
+                            <p class="text-gray-700 dark:text-gray-300">La disyunción es verdadera cuando al menos una de las proposiciones es verdadera.</p>
+                            <div class="mt-2 text-sm bg-green-50 dark:bg-green-900 p-2 rounded">
+                                <strong>Ejemplo:</strong> "Voy al cine O voy al parque" es verdadero si hago al menos una de estas actividades.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-xl font-bold text-red-600 dark:text-red-400 mb-2">¬ Negación (NOT)</h4>
+                            <p class="text-gray-700 dark:text-gray-300">La negación invierte el valor de verdad de una proposición.</p>
+                            <div class="mt-2 text-sm bg-red-50 dark:bg-red-900 p-2 rounded">
+                                <strong>Ejemplo:</strong> Si "Hace sol" es verdadero, entonces "NO hace sol" es falso.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-xl font-bold text-purple-600 dark:text-purple-400 mb-2">→ Implicación</h4>
+                            <p class="text-gray-700 dark:text-gray-300">La implicación es falsa solo cuando el antecedente es verdadero y el consecuente es falso.</p>
+                            <div class="mt-2 text-sm bg-purple-50 dark:bg-purple-900 p-2 rounded">
+                                <strong>Ejemplo:</strong> "Si llueve, entonces me quedo en casa" es falso solo si llueve pero no me quedo en casa.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-xl font-bold text-orange-600 dark:text-orange-400 mb-2">↔ Bicondicional</h4>
+                            <p class="text-gray-700 dark:text-gray-300">El bicondicional es verdadero cuando ambas proposiciones tienen el mismo valor de verdad.</p>
+                            <div class="mt-2 text-sm bg-orange-50 dark:bg-orange-900 p-2 rounded">
+                                <strong>Ejemplo:</strong> "Apruebo si y solo si estudio" es verdadero cuando ambas son verdaderas o ambas son falsas.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Truth Tables Theory Section -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+                        📊 Teoría de las Tablas de Verdad
+                    </h3>
+                    
+                    <!-- What are Truth Tables -->
+                    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-xl font-bold text-primary mb-4">¿Qué son las Tablas de Verdad?</h4>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">
+                            Las <strong>tablas de verdad</strong> son herramientas fundamentales en lógica matemática que nos permiten analizar todas las posibles combinaciones de valores de verdad para proposiciones lógicas.
+                        </p>
+                        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                            <h5 class="font-bold text-blue-800 dark:text-blue-300 mb-2">💡 Conceptos clave:</h5>
+                            <ul class="list-disc list-inside text-blue-700 dark:text-blue-400 space-y-1">
+                                <li><strong>Proposición:</strong> Una afirmación que puede ser verdadera (V/1) o falsa (F/0)</li>
+                                <li><strong>Valor de verdad:</strong> El estado de verdadero o falso de una proposición</li>
+                                <li><strong>Conectores lógicos:</strong> Símbolos que unen proposiciones (∧, ∨, ¬, →, ↔)</li>
+                                <li><strong>Proposición compuesta:</strong> Combinación de proposiciones simples usando conectores</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- How to Read Truth Tables -->
+                    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-xl font-bold text-green-600 dark:text-green-400 mb-4">📖 Cómo Interpretar las Tablas de Verdad</h4>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-bold text-gray-800 dark:text-white mb-3">Estructura de una tabla:</h5>
+                                <div class="bg-gray-50 dark:bg-gray-600 p-4 rounded-lg">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-primary text-white">
+                                            <tr>
+                                                <th class="px-2 py-1">P</th>
+                                                <th class="px-2 py-1">Q</th>
+                                                <th class="px-2 py-1">P ∧ Q</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-300 dark:divide-gray-500">
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">V</td>
+                                                <td class="px-2 py-1">V</td>
+                                                <td class="px-2 py-1 font-bold text-green-600">V</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">V</td>
+                                                <td class="px-2 py-1">F</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">F</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">F</td>
+                                                <td class="px-2 py-1">V</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">F</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">F</td>
+                                                <td class="px-2 py-1">F</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">F</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-bold text-gray-800 dark:text-white mb-3">Pasos para leer:</h5>
+                                <ol class="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                                    <li><span class="font-medium">Identifica las variables</span> (P, Q, R...)</li>
+                                    <li><span class="font-medium">Observa las columnas de entrada</span> (valores de P y Q)</li>
+                                    <li><span class="font-medium">Analiza la columna resultado</span> (P ∧ Q)</li>
+                                    <li><span class="font-medium">Verifica cada fila</span> para entender el patrón</li>
+                                </ol>
+                                
+                                <div class="mt-4 bg-yellow-50 dark:bg-yellow-900 p-3 rounded">
+                                    <p class="text-yellow-800 dark:text-yellow-300 text-sm">
+                                        <strong>💡 Tip:</strong> Con n variables, tendrás 2ⁿ filas en tu tabla. 
+                                        Para 2 variables: 2² = 4 filas.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Truth Table Examples -->
+                    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4">🎯 Ejemplos Paso a Paso</h4>
+                        
+                        <!-- Example 1: Simple Conjunction -->
+                        <div class="mb-6">
+                            <h5 class="font-bold text-gray-800 dark:text-white mb-3">Ejemplo 1: "Llueve Y hace frío" (P ∧ Q)</h5>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                        <strong>P:</strong> "Llueve"<br>
+                                        <strong>Q:</strong> "Hace frío"<br>
+                                        <strong>P ∧ Q:</strong> "Llueve Y hace frío"
+                                    </p>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                                        La conjunción es verdadera solo cuando ambas condiciones se cumplen.
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-600 p-3 rounded">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-blue-500 text-white">
+                                            <tr>
+                                                <th class="px-2 py-1">Llueve</th>
+                                                <th class="px-2 py-1">Hace frío</th>
+                                                <th class="px-2 py-1">Resultado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1 font-bold text-green-600">Verdadero</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">Falso</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">Falso</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">Falso</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Example 2: Implication -->
+                        <div class="mb-6">
+                            <h5 class="font-bold text-gray-800 dark:text-white mb-3">Ejemplo 2: "Si estudio, entonces apruebo" (P → Q)</h5>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                        <strong>P:</strong> "Estudio"<br>
+                                        <strong>Q:</strong> "Apruebo"<br>
+                                        <strong>P → Q:</strong> "Si estudio, entonces apruebo"
+                                    </p>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                                        La implicación es falsa solo cuando estudio pero no apruebo.
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-600 p-3 rounded">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-purple-500 text-white">
+                                            <tr>
+                                                <th class="px-2 py-1">Estudio</th>
+                                                <th class="px-2 py-1">Apruebo</th>
+                                                <th class="px-2 py-1">Resultado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1 font-bold text-green-600">Verdadero</td>
+                                            </tr>
+                                            <tr class="text-center bg-red-50 dark:bg-red-900">
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1 font-bold text-red-600">Falso</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1">Sí</td>
+                                                <td class="px-2 py-1 font-bold text-green-600">Verdadero</td>
+                                            </tr>
+                                            <tr class="text-center">
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1">No</td>
+                                                <td class="px-2 py-1 font-bold text-green-600">Verdadero</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Applications and Importance -->
+                    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg">
+                        <h4 class="text-xl font-bold text-orange-600 dark:text-orange-400 mb-4">🔧 Aplicaciones e Importancia</h4>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-bold text-gray-800 dark:text-white mb-3">🎓 En Matemáticas:</h5>
+                                <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>Demostración de teoremas</li>
+                                    <li>Análisis de argumentos válidos</li>
+                                    <li>Simplificación de expresiones lógicas</li>
+                                    <li>Verificación de equivalencias</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-bold text-gray-800 dark:text-white mb-3">💻 En Tecnología:</h5>
+                                <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>Diseño de circuitos digitales</li>
+                                    <li>Programación (condiciones IF-THEN)</li>
+                                    <li>Bases de datos (consultas SQL)</li>
+                                    <li>Inteligencia artificial</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 p-4 rounded-lg">
+                            <h5 class="font-bold text-gray-800 dark:text-white mb-2">🌟 ¿Por qué son importantes?</h5>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                Las tablas de verdad nos ayudan a <strong>pensar de manera sistemática</strong> y verificar si nuestros razonamientos son correctos. 
+                                Son la base para entender cómo funcionan las computadoras y cómo tomar decisiones lógicas en situaciones complejas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                <div id="feedback-content" class="text-center">
+                    <!-- Feedback content will be inserted here -->
+                </div>
+                <button onclick="closeFeedbackModal()" class="w-full mt-4 bg-primary hover:bg-blue-600 text-white py-2 rounded-lg transition-all">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode setup
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Game state
+        let gameState = {
+            score: 0,
+            level: 1,
+            currentGate: null,
+            inputP: false,
+            inputQ: false,
+            currentExercise: null,
+            exercises: []
+        };
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Add active class to selected button
+            const activeBtn = document.getElementById('tab-' + tabName);
+            activeBtn.classList.add('active', 'bg-primary', 'text-white');
+            activeBtn.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
+            
+            // Initialize tab-specific content
+            if (tabName === 'truth-table') {
+                generateTruthTable();
+            } else if (tabName === 'exercises') {
+                if (!gameState.currentExercise) {
+                    generateExercise();
+                }
+            }
+        }
+
+        // Gate selection
+        function selectGate(gateType) {
+            gameState.currentGate = gateType;
+            
+            // Update UI to show selected gate
+            document.querySelectorAll('.gate-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-yellow-400');
+            });
+            event.target.classList.add('ring-4', 'ring-yellow-400');
+            
+            // Update the circuit
+            updateCircuit();
+            showFeedback(`¡Conectaste la compuerta ${gateType}!`, 'success');
+        }
+
+        // Input toggle
+        function toggleInput(input) {
+            if (input === 'p') {
+                gameState.inputP = !gameState.inputP;
+                document.getElementById('p-value').textContent = gameState.inputP ? '1' : '0';
+                document.getElementById('input-p').setAttribute('fill', gameState.inputP ? '#4ECDC4' : '#94A3B8');
+            } else if (input === 'q') {
+                gameState.inputQ = !gameState.inputQ;
+                document.getElementById('q-value').textContent = gameState.inputQ ? '1' : '0';
+                document.getElementById('input-q').setAttribute('fill', gameState.inputQ ? '#4ECDC4' : '#94A3B8');
+            }
+            
+            updateCircuit();
+        }
+
+        // Logic operations
+        function calculateResult(gateType, p, q) {
+            switch (gateType) {
+                case 'AND': return p && q;
+                case 'OR': return p || q;
+                case 'NOT': return !p;
+                case 'IMPL': return !p || q;
+                case 'BICOND': return p === q;
+                default: return false;
+            }
+        }
+
+        // Update circuit
+        function updateCircuit() {
+            if (!gameState.currentGate) return;
+            
+            const result = calculateResult(gameState.currentGate, gameState.inputP, gameState.inputQ);
+            document.getElementById('result-value').textContent = result ? '1' : '0';
+            document.getElementById('output').setAttribute('fill', result ? '#4ECDC4' : '#FF6B6B');
+            
+            // Update gate visualization
+            const gateContainer = document.getElementById('logic-gate-container');
+            gateContainer.innerHTML = '';
+            
+            // Draw gate symbol
+            const gateG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', '200');
+            rect.setAttribute('y', '125');
+            rect.setAttribute('width', '80');
+            rect.setAttribute('height', '50');
+            rect.setAttribute('fill', '#5D5CDE');
+            rect.setAttribute('rx', '10');
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '240');
+            text.setAttribute('y', '155');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('class', 'fill-white font-bold');
+            text.textContent = getGateSymbol(gameState.currentGate);
+            
+            gateG.appendChild(rect);
+            gateG.appendChild(text);
+            gateContainer.appendChild(gateG);
+            
+            // Draw connections
+            drawConnections();
+        }
+
+        function getGateSymbol(gateType) {
+            const symbols = {
+                'AND': '∧',
+                'OR': '∨',
+                'NOT': '¬',
+                'IMPL': '→',
+                'BICOND': '↔'
+            };
+            return symbols[gateType] || '?';
+        }
+
+        function drawConnections() {
+            // Remove existing connections
+            document.querySelectorAll('.circuit-line').forEach(line => line.remove());
+            
+            const svg = document.getElementById('circuit-canvas');
+            
+            // P to gate
+            const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line1.setAttribute('x1', '70');
+            line1.setAttribute('y1', '100');
+            line1.setAttribute('x2', '200');
+            line1.setAttribute('y2', '135');
+            line1.setAttribute('class', 'circuit-line');
+            svg.appendChild(line1);
+            
+            // Q to gate (only for binary operations)
+            if (gameState.currentGate !== 'NOT') {
+                const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line2.setAttribute('x1', '70');
+                line2.setAttribute('y1', '200');
+                line2.setAttribute('x2', '200');
+                line2.setAttribute('y2', '165');
+                line2.setAttribute('class', 'circuit-line');
+                svg.appendChild(line2);
+            }
+            
+            // Gate to output
+            const line3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line3.setAttribute('x1', '280');
+            line3.setAttribute('y1', '150');
+            line3.setAttribute('x2', '375');
+            line3.setAttribute('y2', '150');
+            line3.setAttribute('class', 'circuit-line');
+            svg.appendChild(line3);
+        }
+
+        // Truth table generation
+        function generateTruthTable() {
+            const gateType = document.getElementById('truth-table-selector').value;
+            const container = document.getElementById('truth-table-container');
+            
+            let html = '<table class="w-full bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-lg">';
+            html += '<thead class="bg-primary text-white">';
+            
+            if (gateType === 'NOT') {
+                html += '<tr><th class="px-4 py-3">P</th><th class="px-4 py-3">¬P</th></tr>';
+                html += '</thead><tbody class="divide-y divide-gray-200 dark:divide-gray-600">';
+                
+                for (let p = 0; p <= 1; p++) {
+                    const result = calculateResult(gateType, p === 1, false);
+                    html += `<tr class="text-center hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">${p}</td>
+                        <td class="px-4 py-3 font-bold ${result ? 'text-green-600' : 'text-red-600'}">${result ? '1' : '0'}</td>
+                    </tr>`;
+                }
+            } else {
+                const symbol = getGateSymbol(gateType);
+                html += `<tr><th class="px-4 py-3">P</th><th class="px-4 py-3">Q</th><th class="px-4 py-3">P ${symbol} Q</th></tr>`;
+                html += '</thead><tbody class="divide-y divide-gray-200 dark:divide-gray-600">';
+                
+                for (let p = 0; p <= 1; p++) {
+                    for (let q = 0; q <= 1; q++) {
+                        const result = calculateResult(gateType, p === 1, q === 1);
+                        html += `<tr class="text-center hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                            <td class="px-4 py-3 text-gray-700 dark:text-gray-300">${p}</td>
+                            <td class="px-4 py-3 text-gray-700 dark:text-gray-300">${q}</td>
+                            <td class="px-4 py-3 font-bold ${result ? 'text-green-600' : 'text-red-600'}">${result ? '1' : '0'}</td>
+                        </tr>`;
+                    }
+                }
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Exercise generation
+        function generateExercise() {
+            const gates = ['AND', 'OR', 'NOT', 'IMPL', 'BICOND'];
+            const selectedGate = gates[Math.floor(Math.random() * gates.length)];
+            const p = Math.random() < 0.5;
+            const q = Math.random() < 0.5;
+            const correctAnswer = calculateResult(selectedGate, p, q);
+            
+            gameState.currentExercise = {
+                gate: selectedGate,
+                p: p,
+                q: q,
+                correctAnswer: correctAnswer,
+                userAnswer: null
+            };
+            
+            displayExercise();
+        }
+
+        function displayExercise() {
+            const exercise = gameState.currentExercise;
+            const container = document.getElementById('exercise-container');
+            
+            let questionText;
+            if (exercise.gate === 'NOT') {
+                questionText = `¿Cuál es el resultado de ¬${exercise.p ? '1' : '0'}?`;
+            } else {
+                const symbol = getGateSymbol(exercise.gate);
+                questionText = `¿Cuál es el resultado de ${exercise.p ? '1' : '0'} ${symbol} ${exercise.q ? '1' : '0'}?`;
+            }
+            
+            container.innerHTML = `
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg">
+                    <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-4">${questionText}</h4>
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="selectAnswer(true)" id="answer-true" class="answer-btn bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-bold transition-all">
+                            Verdadero (1)
+                        </button>
+                        <button onclick="selectAnswer(false)" id="answer-false" class="answer-btn bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-lg text-lg font-bold transition-all">
+                            Falso (0)
+                        </button>
+                    </div>
+                    <div id="exercise-feedback" class="mt-4 text-center"></div>
+                </div>
+            `;
+        }
+
+        function selectAnswer(answer) {
+            gameState.currentExercise.userAnswer = answer;
+            
+            // Update button styles
+            document.querySelectorAll('.answer-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-yellow-400');
+            });
+            
+            const selectedBtn = answer ? document.getElementById('answer-true') : document.getElementById('answer-false');
+            selectedBtn.classList.add('ring-4', 'ring-yellow-400');
+        }
+
+        function checkAnswer() {
+            if (gameState.currentExercise.userAnswer === null) {
+                showFeedback('¡Por favor selecciona una respuesta!', 'warning');
+                return;
+            }
+            
+            const isCorrect = gameState.currentExercise.userAnswer === gameState.currentExercise.correctAnswer;
+            
+            if (isCorrect) {
+                gameState.score += 10;
+                updateScore();
+                showFeedback('¡Correcto! 🎉', 'success');
+                
+                // Check for level up
+                if (gameState.score >= gameState.level * 50) {
+                    gameState.level++;
+                    updateLevel();
+                    showFeedback(`¡Subiste al nivel ${gameState.level}! 🏆`, 'success');
+                }
+            } else {
+                const correctText = gameState.currentExercise.correctAnswer ? 'Verdadero (1)' : 'Falso (0)';
+                showFeedback(`Incorrecto. La respuesta correcta es: ${correctText}`, 'error');
+            }
+            
+            // Generate new exercise after a delay
+            setTimeout(() => {
+                generateExercise();
+            }, 2000);
+        }
+
+        // Interactive examples
+        function generateNewExample() {
+            const examples = [
+                {
+                    title: "🌧️ Ejemplo: Lluvia y Paraguas",
+                    description: "Si llueve (P) Y tengo paraguas (Q), entonces no me mojo (R)",
+                    gate: "AND"
+                },
+                {
+                    title: "🍕 Ejemplo: Pizza o Hamburguesa",
+                    description: "Comeré pizza (P) O hamburguesa (Q) para cenar (R)",
+                    gate: "OR"
+                },
+                {
+                    title: "☀️ Ejemplo: No llueve",
+                    description: "Si NO llueve (¬P), entonces saldré al parque (R)",
+                    gate: "NOT"
+                },
+                {
+                    title: "📚 Ejemplo: Estudiar implica aprobar",
+                    description: "Si estudio (P), entonces aprobaré (Q)",
+                    gate: "IMPL"
+                },
+                {
+                    title: "🚗 Ejemplo: Licencia y manejar",
+                    description: "Tengo licencia (P) si y solo si puedo manejar (Q)",
+                    gate: "BICOND"
+                }
+            ];
+            
+            const example = examples[Math.floor(Math.random() * examples.length)];
+            const container = document.getElementById('example-container');
+            
+            container.innerHTML = `
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow bounce-in">
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-white mb-2">${example.title}</h4>
+                    <p class="text-gray-600 dark:text-gray-300 mb-3">${example.description}</p>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        💡 Usa el simulador para verificar esta proposición
+                    </div>
+                </div>
+            `;
+        }
+
+        // Feedback system
+        function showFeedback(message, type) {
+            const modal = document.getElementById('feedback-modal');
+            const content = document.getElementById('feedback-content');
+            
+            let icon, color;
+            switch (type) {
+                case 'success':
+                    icon = '🎉';
+                    color = 'text-green-600';
+                    break;
+                case 'error':
+                    icon = '❌';
+                    color = 'text-red-600';
+                    break;
+                case 'warning':
+                    icon = '⚠️';
+                    color = 'text-yellow-600';
+                    break;
+                default:
+                    icon = 'ℹ️';
+                    color = 'text-blue-600';
+            }
+            
+            content.innerHTML = `
+                <div class="${color} text-4xl mb-2">${icon}</div>
+                <p class="text-lg font-semibold text-gray-800 dark:text-white">${message}</p>
+            `;
+            
+            modal.classList.remove('hidden');
+            
+            // Auto-close after 3 seconds for success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    closeFeedbackModal();
+                }, 3000);
+            }
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').classList.add('hidden');
+        }
+
+        // Score and level management
+        function updateScore() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('score').parentElement.classList.add('pulse-glow');
+            setTimeout(() => {
+                document.getElementById('score').parentElement.classList.remove('pulse-glow');
+            }, 1000);
+        }
+
+        function updateLevel() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('level').parentElement.classList.add('bounce-in');
+            setTimeout(() => {
+                document.getElementById('level').parentElement.classList.remove('bounce-in');
+            }, 600);
+        }
+
+        // Proposition Evaluator Functions
+        let propositionState = {
+            expectedResult: null
+        };
+
+        function insertSymbol(symbol) {
+            const textarea = document.getElementById('proposition-input');
+            const cursorPos = textarea.selectionStart;
+            const text = textarea.value;
+            const newText = text.substring(0, cursorPos) + symbol + text.substring(cursorPos);
+            textarea.value = newText;
+            textarea.focus();
+            textarea.setSelectionRange(cursorPos + symbol.length, cursorPos + symbol.length);
+        }
+
+        function selectExpectedResult(result) {
+            propositionState.expectedResult = result;
+            
+            // Update button styles
+            document.querySelectorAll('.expected-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-yellow-400');
+            });
+            
+            const selectedBtn = result ? document.getElementById('expected-true') : document.getElementById('expected-false');
+            selectedBtn.classList.add('ring-4', 'ring-yellow-400');
+        }
+
+        function evaluateProposition() {
+            const proposition = document.getElementById('proposition-input').value.trim();
+            const pValue = document.getElementById('prop-p-value').value === 'true';
+            const qValue = document.getElementById('prop-q-value').value === 'true';
+            
+            if (!proposition) {
+                showFeedback('¡Por favor escribe una proposición!', 'warning');
+                return;
+            }
+            
+            if (propositionState.expectedResult === null) {
+                showFeedback('¡Por favor selecciona tu resultado esperado!', 'warning');
+                return;
+            }
+            
+            // Parse and evaluate the proposition
+            const result = parseProposition(proposition, pValue, qValue);
+            
+            if (result.error) {
+                displayPropositionResults(null, result.error, proposition, pValue, qValue);
+                return;
+            }
+            
+            const actualResult = result.value;
+            const isCorrect = actualResult === propositionState.expectedResult;
+            
+            displayPropositionResults(actualResult, null, proposition, pValue, qValue, isCorrect);
+            
+            // Update score if correct
+            if (isCorrect) {
+                gameState.score += 15;
+                updateScore();
+                showFeedback('¡Excelente! Tu predicción fue correcta 🎉', 'success');
+            } else {
+                showFeedback('Tu predicción no coincidió con el resultado real. ¡Sigue practicando!', 'info');
+            }
+        }
+
+        function parseProposition(proposition, pValue, qValue) {
+            try {
+                // Replace logical symbols with JavaScript operators
+                let expr = proposition
+                    .replace(/P/g, pValue.toString())
+                    .replace(/Q/g, qValue.toString())
+                    .replace(/¬/g, '!')
+                    .replace(/∧/g, '&&')
+                    .replace(/∨/g, '||');
+                
+                // Handle implication (P → Q is equivalent to !P || Q)
+                expr = expr.replace(/([^&|!()]+)\s*→\s*([^&|!()]+)/g, '(!($1) || ($2))');
+                
+                // Handle biconditional (P ↔ Q is equivalent to (P && Q) || (!P && !Q))
+                expr = expr.replace(/([^&|!()]+)\s*↔\s*([^&|!()]+)/g, '(($1) && ($2)) || (!($1) && !($2))');
+                
+                // Evaluate the expression safely
+                const result = Function('"use strict"; return (' + expr + ')')();
+                return { value: Boolean(result), error: null };
+                
+            } catch (e) {
+                return { 
+                    value: null, 
+                    error: 'Error en la sintaxis de la proposición. Verifica que uses los símbolos correctos y paréntesis si es necesario.' 
+                };
+            }
+        }
+
+        function displayPropositionResults(actualResult, error, proposition, pValue, qValue, isCorrect = null) {
+            const container = document.getElementById('proposition-results');
+            
+            if (error) {
+                container.innerHTML = `
+                    <div class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-2"></i>
+                            <h5 class="font-bold text-red-800 dark:text-red-300">Error</h5>
+                        </div>
+                        <p class="text-red-700 dark:text-red-400">${error}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const resultColor = actualResult ? 'text-green-600' : 'text-red-600';
+            const predictionIcon = isCorrect ? '✅' : '❌';
+            const predictionText = isCorrect ? 'Correcto' : 'Incorrecto';
+            const predictionColor = isCorrect ? 'text-green-600' : 'text-red-600';
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <!-- Proposition Details -->
+                    <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                        <h5 class="font-bold text-blue-800 dark:text-blue-300 mb-2">📝 Proposición evaluada:</h5>
+                        <div class="font-mono text-lg text-blue-700 dark:text-blue-400 bg-white dark:bg-blue-800 p-2 rounded border">
+                            ${proposition}
+                        </div>
+                    </div>
+                    
+                    <!-- Values Used -->
+                    <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                        <h5 class="font-bold text-gray-800 dark:text-gray-300 mb-2">🔢 Valores utilizados:</h5>
+                        <div class="flex space-x-4">
+                            <span class="text-gray-700 dark:text-gray-400">P = <span class="font-bold ${pValue ? 'text-green-600' : 'text-red-600'}">${pValue ? 'Verdadero (1)' : 'Falso (0)'}</span></span>
+                            <span class="text-gray-700 dark:text-gray-400">Q = <span class="font-bold ${qValue ? 'text-green-600' : 'text-red-600'}">${qValue ? 'Verdadero (1)' : 'Falso (0)'}</span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Result -->
+                    <div class="bg-white dark:bg-gray-700 border-2 border-primary rounded-lg p-4">
+                        <h5 class="font-bold text-gray-800 dark:text-gray-300 mb-2">🎯 Resultado real:</h5>
+                        <div class="text-3xl font-bold ${resultColor} text-center">
+                            ${actualResult ? 'Verdadero (1)' : 'Falso (0)'}
+                        </div>
+                    </div>
+                    
+                    <!-- Prediction Check -->
+                    <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                        <h5 class="font-bold text-gray-800 dark:text-gray-300 mb-2">🤔 Tu predicción:</h5>
+                        <div class="flex items-center justify-center space-x-2">
+                            <span class="text-2xl">${predictionIcon}</span>
+                            <span class="text-xl font-bold ${predictionColor}">${predictionText}</span>
+                        </div>
+                        <div class="text-center text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            Predijiste: ${propositionState.expectedResult ? 'Verdadero (1)' : 'Falso (0)'}
+                        </div>
+                    </div>
+                    
+                    <!-- Explanation -->
+                    <div class="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                        <h5 class="font-bold text-yellow-800 dark:text-yellow-300 mb-2">💡 Explicación:</h5>
+                        <p class="text-yellow-700 dark:text-yellow-400 text-sm">
+                            ${generateExplanation(proposition, pValue, qValue, actualResult)}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // Reset expected result for next evaluation
+            propositionState.expectedResult = null;
+            document.querySelectorAll('.expected-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-yellow-400');
+            });
+        }
+
+        function generateExplanation(proposition, pValue, qValue, result) {
+            // Generate a simple explanation based on the result
+            if (proposition.includes('∧')) {
+                return `La conjunción (∧) es verdadera solo cuando ambas partes son verdaderas. En este caso, el resultado es ${result ? 'verdadero' : 'falso'}.`;
+            } else if (proposition.includes('∨')) {
+                return `La disyunción (∨) es verdadera cuando al menos una parte es verdadera. En este caso, el resultado es ${result ? 'verdadero' : 'falso'}.`;
+            } else if (proposition.includes('¬')) {
+                return `La negación (¬) invierte el valor de verdad. En este caso, el resultado es ${result ? 'verdadero' : 'falso'}.`;
+            } else if (proposition.includes('→')) {
+                return `La implicación (→) es falsa solo cuando el antecedente es verdadero y el consecuente es falso. En este caso, el resultado es ${result ? 'verdadero' : 'falso'}.`;
+            } else if (proposition.includes('↔')) {
+                return `El bicondicional (↔) es verdadero cuando ambas partes tienen el mismo valor de verdad. En este caso, el resultado es ${result ? 'verdadero' : 'falso'}.`;
+            } else {
+                return `Con los valores asignados, la proposición evalúa a ${result ? 'verdadero' : 'falso'}.`;
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            generateNewExample();
+            generateTruthTable();
+        });
+    </script>
+</body>
+</html>

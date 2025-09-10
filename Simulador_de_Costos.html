@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Jardín Matemático</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl border-t-4 border-emerald-500">
+        <h1 class="text-3xl font-bold text-center text-emerald-700 mb-6">El Jardín Matemático</h1>
+        <p class="text-center text-gray-600 mb-8">
+            Aplica tus conocimientos de geometría y álgebra para diseñar un jardín y calcular su presupuesto.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- Sección de Diseño y Medidas -->
+            <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-200">
+                <h2 class="text-xl font-semibold text-emerald-800 mb-4">1. Diseño y Medidas</h2>
+                <p class="text-gray-700 mb-4">
+                    Imagina que este es tu diseño. Ingresa las medidas para calcular los costos.
+                </p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="plant-area-input">Área de Plantas ($m^2$):</label>
+                        <input type="number" id="plant-area-input" value="4" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="grass-area-input">Área de Pasto ($m^2$):</label>
+                        <input type="number" id="grass-area-input" value="15" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="fence-perimeter-input">Perímetro a Cercar (metros):</label>
+                        <input type="number" id="fence-perimeter-input" value="16" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Expresiones y Cálculos -->
+            <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-200">
+                <h2 class="text-xl font-semibold text-emerald-800 mb-4">2. Expresiones y Costos</h2>
+                <div class="mb-4">
+                    <p class="text-gray-700 font-medium">Precios por unidad:</p>
+                    <ul class="list-disc list-inside ml-4 text-gray-600">
+                        <li>Área de plantas: $150 por $m^2$</li>
+                        <li>Área de pasto: $40 por $m^2$</li>
+                        <li>Cercado: $350 por metro lineal</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-200 p-4 rounded-md">
+                    <p class="font-mono text-sm text-gray-800">
+                        <!-- LaTeX: $CT = (150 \times A_p) + (40 \times A_{pa}) + (350 \times P_c)$ -->
+                        <span class="text-emerald-600 font-bold">Expresión Algebraica:</span><br>
+                        Costo Total = (150 * Área de Plantas) + (40 * Área de Pasto) + (350 * Perímetro)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados de la Simulación -->
+        <div class="bg-emerald-100 p-6 rounded-lg border-l-4 border-emerald-600">
+            <h2 class="text-2xl font-bold text-emerald-800 mb-4">Cálculos Finales</h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Costo de Plantas</p>
+                    <p id="cost-plant" class="text-2xl font-bold text-emerald-700 mt-1">$ 0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Costo de Pasto</p>
+                    <p id="cost-grass" class="text-2xl font-bold text-emerald-700 mt-1">$ 0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Costo de Cercado</p>
+                    <p id="cost-fence" class="text-2xl font-bold text-emerald-700 mt-1">$ 0.00</p>
+                </div>
+                <div class="lg:col-span-3 mt-4">
+                    <div class="bg-emerald-600 text-white p-4 rounded-lg shadow-xl">
+                        <p class="text-lg font-semibold">Costo Total del Jardín</p>
+                        <p id="cost-total" class="text-4xl font-extrabold mt-2">$ 0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const plantAreaInput = document.getElementById('plant-area-input');
+        const grassAreaInput = document.getElementById('grass-area-input');
+        const fencePerimeterInput = document.getElementById('fence-perimeter-input');
+
+        const costPlantDisplay = document.getElementById('cost-plant');
+        const costGrassDisplay = document.getElementById('cost-grass');
+        const costFenceDisplay = document.getElementById('cost-fence');
+        const costTotalDisplay = document.getElementById('cost-total');
+
+        const COST_PLANT_PER_SQM = 150;
+        const COST_GRASS_PER_SQM = 40;
+        const COST_FENCE_PER_METER = 350;
+
+        function updateCosts() {
+            const plantArea = parseFloat(plantAreaInput.value) || 0;
+            const grassArea = parseFloat(grassAreaInput.value) || 0;
+            const fencePerimeter = parseFloat(fencePerimeterInput.value) || 0;
+
+            const costPlant = plantArea * COST_PLANT_PER_SQM;
+            const costGrass = grassArea * COST_GRASS_PER_SQM;
+            const costFence = fencePerimeter * COST_FENCE_PER_METER;
+            const totalCost = costPlant + costGrass + costFence;
+
+            costPlantDisplay.textContent = `$ ${costPlant.toFixed(2)}`;
+            costGrassDisplay.textContent = `$ ${costGrass.toFixed(2)}`;
+            costFenceDisplay.textContent = `$ ${costFence.toFixed(2)}`;
+            costTotalDisplay.textContent = `$ ${totalCost.toFixed(2)}`;
+        }
+
+        // Add event listeners to update the costs as the user types
+        plantAreaInput.addEventListener('input', updateCosts);
+        grassAreaInput.addEventListener('input', updateCosts);
+        fencePerimeterInput.addEventListener('input', updateCosts);
+
+        // Initial calculation on page load
+        window.onload = updateCosts;
+    </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto de Viaje Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 900px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="container bg-white p-8 rounded-xl shadow-lg w-full border-t-4 border-blue-500">
+        <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">El Presupuesto del Viaje Escolar</h1>
+        <p class="text-center text-gray-600 mb-8">
+            ¡Usa tus habilidades matemáticas para planificar nuestra aventura al Museo El Laberinto!
+        </p>
+        
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- Input Section -->
+            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h2 class="text-xl font-semibold text-blue-800 mb-4">Datos del Viaje</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="cantidad-alumnos">Cantidad de alumnos:</label>
+                        <input type="number" id="cantidad-alumnos" value="30" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="distancia-viaje">Distancia (km, solo ida):</label>
+                        <input type="number" id="distancia-viaje" value="120" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="costo-entrada">Costo de Entrada al Museo:</label>
+                        <input type="number" id="costo-entrada" value="120" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1" for="costo-comida">Presupuesto de Comida (por alumno):</label>
+                        <input type="number" id="costo-comida" value="100" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h2 class="text-xl font-semibold text-blue-800 mb-4">Cálculos del Presupuesto</h2>
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Costo Total del Transporte</p>
+                        <p id="costo-transporte-total" class="text-2xl font-bold text-blue-700 mt-1">$ 0.00</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Costo por Estudiante (sin imprevistos)</p>
+                        <p id="costo-estudiante" class="text-2xl font-bold text-blue-700 mt-1">$ 0.00</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Costo del Grupo (sin imprevistos)</p>
+                        <p id="costo-grupo-base" class="text-2xl font-bold text-blue-700 mt-1">$ 0.00</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Fondo para Imprevistos (10%)</p>
+                        <p id="costo-imprevistos" class="text-2xl font-bold text-blue-700 mt-1">$ 0.00</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Costo por Estudiante (con imprevistos)</p>
+                        <p id="costo-estudiante-con-imprevistos" class="text-2xl font-bold text-blue-700 mt-1">$ 0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Final Cost Section -->
+        <div class="bg-blue-600 text-white p-6 rounded-lg shadow-xl text-center">
+            <h2 class="text-lg font-semibold">Costo Total Final del Viaje</h2>
+            <p id="costo-total-final" class="text-4xl font-extrabold mt-2">$ 0.00</p>
+        </div>
+    </div>
+    
+    <script>
+        const alumnosInput = document.getElementById('cantidad-alumnos');
+        const distanciaInput = document.getElementById('distancia-viaje');
+        const entradaInput = document.getElementById('costo-entrada');
+        const comidaInput = document.getElementById('costo-comida');
+
+        const transporteDisplay = document.getElementById('costo-transporte-total');
+        const estudianteDisplay = document.getElementById('costo-estudiante');
+        const grupoBaseDisplay = document.getElementById('costo-grupo-base');
+        const imprevistosDisplay = document.getElementById('costo-imprevistos');
+        const estudianteConImprevistosDisplay = document.getElementById('costo-estudiante-con-imprevistos');
+        const totalFinalDisplay = document.getElementById('costo-total-final');
+
+        const COSTO_TRANSPORTE_KM = 25;
+        
+        function calcularPresupuesto() {
+            const numAlumnos = parseFloat(alumnosInput.value) || 0;
+            const distancia = parseFloat(distanciaInput.value) || 0;
+            const costoEntrada = parseFloat(entradaInput.value) || 0;
+            const costoComida = parseFloat(comidaInput.value) || 0;
+            
+            // Paso 1: Cálculo del costo total del transporte (ida y vuelta)
+            const costoTransporteTotal = (distancia * 2) * COSTO_TRANSPORTE_KM;
+            transporteDisplay.textContent = `$ ${costoTransporteTotal.toFixed(2)}`;
+            
+            // Paso 2: Cálculo del costo por estudiante
+            const costoTransportePorAlumno = costoTransporteTotal / numAlumnos;
+            const costoPorEstudiante = costoEntrada + costoComida + costoTransportePorAlumno;
+            estudianteDisplay.textContent = `$ ${costoPorEstudiante.toFixed(2)}`;
+            
+            // Paso 3: Cálculo del costo total para el grupo
+            const costoGrupoBase = costoPorEstudiante * numAlumnos;
+            grupoBaseDisplay.textContent = `$ ${costoGrupoBase.toFixed(2)}`;
+
+            // Paso 4: Cálculo del 10% de imprevistos
+            const imprevistos = costoGrupoBase * 0.10;
+            imprevistosDisplay.textContent = `$ ${imprevistos.toFixed(2)}`;
+
+            // Paso 5: Cálculo del costo final total
+            const costoTotalFinal = costoGrupoBase + imprevistos;
+            totalFinalDisplay.textContent = `$ ${costoTotalFinal.toFixed(2)}`;
+
+            // Nuevo cálculo: Costo por estudiante con imprevistos
+            const costoPorEstudianteConImprevistos = costoTotalFinal / numAlumnos;
+            estudianteConImprevistosDisplay.textContent = `$ ${costoPorEstudianteConImprevistos.toFixed(2)}`;
+        }
+        
+        alumnosInput.addEventListener('input', calcularPresupuesto);
+        distanciaInput.addEventListener('input', calcularPresupuesto);
+        entradaInput.addEventListener('input', calcularPresupuesto);
+        comidaInput.addEventListener('input', calcularPresupuesto);
+        
+        window.onload = calcularPresupuesto;
+    </script>
+</body>
+</html>

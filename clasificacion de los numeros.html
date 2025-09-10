@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorando la Galaxia Numérica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn {
+            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5D5CDE, #7c3aed);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4338ca, #6d28d9);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #047857, #065f46);
+        }
+
+        .planet {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .example-box {
+            background: rgba(55, 65, 81, 0.8);
+            border-left: 4px solid;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Fondo de estrellas -->
+    <div class="stars" id="stars"></div>
+
+    <!-- PANTALLA 1: INICIO -->
+    <div id="screen1" class="screen active">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-4xl w-full text-center">
+                <div class="planet mb-8">
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-5xl">
+                        🚀
+                    </div>
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">
+                    ¡Explorando la Galaxia Numérica!
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Embárquate en un viaje fascinante por el universo de los números matemáticos. 
+                    Descubre planetas, estaciones espaciales y nebulosas llenas de conocimiento.
+                </p>
+                <button onclick="goToScreen(2)" class="btn btn-primary font-bold text-lg">
+                    🚀 INICIAR VIAJE GALÁCTICO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: NÚMEROS NATURALES -->
+    <div id="screen2" class="screen">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-5xl w-full">
+                <div class="text-center mb-8">
+                    <div class="planet inline-block">
+                        <div class="w-24 h-24 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl mb-4">
+                            🌍
+                        </div>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-green-400 mb-4">
+                        Planeta de los Números Naturales (ℕ)
+                    </h1>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-lg text-gray-300 mb-6">
+                            ¡Bienvenido al primer destino! Aquí habitan los números más básicos y amigables del universo matemático. 
+                            Los números naturales son los primeros que aprende la humanidad: son positivos, enteros y se usan para contar objetos, personas, días, etc. 
+                            Su símbolo matemático es ℕ y representan la cantidad más pura y simple.
+                        </p>
+                        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                            <p class="font-semibold text-green-400 mb-2">🏠 Habitantes:</p>
+                            <p class="text-2xl font-mono text-white">1, 2, 3, 4, 5, 6, 7, 8, 9, 10...</p>
+                            <p class="text-sm text-gray-400 mt-2">¡Hasta el infinito!</p>
+                        </div>
+                        
+                        <!-- Imagen representativa con CSS -->
+                        <div class="bg-green-700 bg-opacity-30 rounded-lg p-4 text-center">
+                            <div class="flex justify-center space-x-2 text-3xl mb-2">
+                                <span>🍎</span><span>🍎</span><span>🍎</span><span>🍎</span><span>🍎</span>
+                            </div>
+                            <p class="text-green-300 text-sm">Contar manzanas: 1, 2, 3, 4, 5</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="toggleExample('example1')" class="btn btn-secondary w-full">
+                            📚 Ver Ejemplos Prácticos
+                        </button>
+                        <div id="example1" class="example-box border-green-400 hidden">
+                            <p class="font-semibold text-green-400 mb-3">Ejemplos:</p>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-green-300 font-semibold">📚 Ejemplo 1:</p>
+                                    <p class="text-gray-300">Si cuentas tus libros y tienes 5, estás usando un número natural. ¡Simple y útil!</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-green-300 font-semibold">🎂 Ejemplo 2:</p>
+                                    <p class="text-gray-300">En tu cumpleaños número 15, el "15" es un número natural que indica cuántos años has vivido.</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-green-300 font-semibold">⚽ Ejemplo 3:</p>
+                                    <p class="text-gray-300">Un equipo de fútbol anota 3 goles en un partido. El número 3 es natural.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8 space-x-4">
+                    <button onclick="goToScreen(1)" class="btn bg-gray-600 hover:bg-gray-700">
+                        ⬅️ Volver al Inicio
+                    </button>
+                    <button onclick="goToScreen(3)" class="btn btn-primary">
+                        Siguiente Planeta ➡️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: NÚMEROS ENTEROS -->
+    <div id="screen3" class="screen">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-5xl w-full">
+                <div class="text-center mb-8">
+                    <div class="planet inline-block">
+                        <div class="w-24 h-24 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-3xl mb-4">
+                            🌐
+                        </div>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-blue-400 mb-4">
+                        Planeta de los Números Enteros (ℤ)
+                    </h1>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-lg text-gray-300 mb-6">
+                            Este planeta es más diverso y completo. Además de los números naturales, aquí también habitan los números negativos 
+                            y el número cero. Los números enteros (símbolo ℤ) son fundamentales para expresar situaciones de la vida real donde 
+                            necesitamos representar pérdidas, deudas, temperaturas bajo cero, niveles del mar, retrocesos en el tiempo, etc.
+                        </p>
+                        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                            <p class="font-semibold text-blue-400 mb-2">🏠 Habitantes:</p>
+                            <p class="text-2xl font-mono text-white">...-3, -2, -1, 0, 1, 2, 3...</p>
+                            <p class="text-sm text-gray-400 mt-2">Negativos, cero y positivos</p>
+                        </div>
+                        
+                        <!-- Imagen representativa con CSS -->
+                        <div class="bg-blue-700 bg-opacity-30 rounded-lg p-4">
+                            <div class="flex justify-center items-center text-2xl mb-2">
+                                <span class="text-red-400">-5°C</span>
+                                <span class="mx-4">🌡️</span>
+                                <span class="text-green-400">+25°C</span>
+                            </div>
+                            <p class="text-blue-300 text-sm text-center">Temperaturas: negativas y positivas</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="toggleExample('example2')" class="btn btn-secondary w-full">
+                            📚 Ver Ejemplos Prácticos
+                        </button>
+                        <div id="example2" class="example-box border-blue-400 hidden">
+                            <p class="font-semibold text-blue-400 mb-3">Ejemplos:</p>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-blue-300 font-semibold">💰 Ejemplo 1:</p>
+                                    <p class="text-gray-300">Si tienes $10 pero debes $3, tu balance es +7. Los números positivos y negativos son enteros.</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-blue-300 font-semibold">🏔️ Ejemplo 2:</p>
+                                    <p class="text-gray-300">El nivel del mar es 0 metros. Una montaña está a +2000m y una fosa marina a -3000m.</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-blue-300 font-semibold">❄️ Ejemplo 3:</p>
+                                    <p class="text-gray-300">En invierno la temperatura puede ser -5°C (bajo cero) o +10°C (sobre cero).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8 space-x-4">
+                    <button onclick="goToScreen(2)" class="btn bg-gray-600 hover:bg-gray-700">
+                        ⬅️ Planeta Anterior
+                    </button>
+                    <button onclick="goToScreen(4)" class="btn btn-primary">
+                        Siguiente Destino ➡️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 4: NÚMEROS RACIONALES -->
+    <div id="screen4" class="screen">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-5xl w-full">
+                <div class="text-center mb-8">
+                    <div class="planet inline-block">
+                        <div class="w-24 h-24 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-3xl mb-4">
+                            🛸
+                        </div>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-purple-400 mb-4">
+                        Estación de los Números Racionales (ℚ)
+                    </h1>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-lg text-gray-300 mb-6">
+                            ¡Bienvenido a la estación espacial más precisa! Los números racionales (símbolo ℚ) son aquellos que se pueden expresar 
+                            como una fracción a/b donde a y b son enteros y b≠0. Incluyen fracciones, decimales exactos y decimales periódicos. 
+                            Son fundamentales para medir, dividir y expresar partes de un todo con precisión matemática.
+                        </p>
+                        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                            <p class="font-semibold text-purple-400 mb-2">🏠 Habitantes:</p>
+                            <p class="text-2xl font-mono text-white">1/2, 3/4, -2/3, 0.25, 0.333...</p>
+                            <p class="text-sm text-gray-400 mt-2">Fracciones y decimales exactos/periódicos</p>
+                        </div>
+                        
+                        <!-- Imagen representativa con CSS -->
+                        <div class="bg-purple-700 bg-opacity-30 rounded-lg p-4">
+                            <div class="flex justify-center items-center mb-2">
+                                <div class="grid grid-cols-4 gap-1">
+                                    <div class="w-8 h-8 bg-yellow-400 rounded"></div>
+                                    <div class="w-8 h-8 bg-yellow-400 rounded"></div>
+                                    <div class="w-8 h-8 bg-yellow-400 rounded"></div>
+                                    <div class="w-8 h-8 bg-gray-500 rounded"></div>
+                                </div>
+                            </div>
+                            <p class="text-purple-300 text-sm text-center">Pizza: 3/4 = 0.75</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="toggleExample('example3')" class="btn btn-secondary w-full">
+                            📚 Ver Ejemplos Prácticos
+                        </button>
+                        <div id="example3" class="example-box border-purple-400 hidden">
+                            <p class="font-semibold text-purple-400 mb-3">Ejemplos:</p>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-purple-300 font-semibold">🍕 Ejemplo 1:</p>
+                                    <p class="text-gray-300">Compartes una pizza entre 4 amigos. Cada uno recibe 1/4 = 0.25 de la pizza. ¡Eso es racional!</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-purple-300 font-semibold">📏 Ejemplo 2:</p>
+                                    <p class="text-gray-300">Una tabla mide 2.5 metros = 5/2 metros. Los decimales exactos son racionales.</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-purple-300 font-semibold">💧 Ejemplo 3:</p>
+                                    <p class="text-gray-300">Un vaso está 2/3 lleno de agua, que equivale a 0.666... (decimal periódico).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8 space-x-4">
+                    <button onclick="goToScreen(3)" class="btn bg-gray-600 hover:bg-gray-700">
+                        ⬅️ Planeta Anterior
+                    </button>
+                    <button onclick="goToScreen(5)" class="btn btn-primary">
+                        Siguiente Destino ➡️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 5: NÚMEROS IRRACIONALES -->
+    <div id="screen5" class="screen">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-5xl w-full">
+                <div class="text-center mb-8">
+                    <div class="planet inline-block">
+                        <div class="w-24 h-24 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full flex items-center justify-center text-3xl mb-4">
+                            🌌
+                        </div>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-pink-400 mb-4">
+                        Nebulosa de los Números Irracionales
+                    </h1>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="text-lg text-gray-300 mb-6">
+                            ¡Los números más misteriosos y fascinantes del universo matemático! Los números irracionales NO se pueden expresar 
+                            como fracciones simples a/b. Sus decimales son infinitos, no se repiten y no siguen ningún patrón predecible. 
+                            Aparecen constantemente en la naturaleza, el arte, la arquitectura y son fundamentales en matemáticas avanzadas.
+                        </p>
+                        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                            <p class="font-semibold text-pink-400 mb-2">🏠 Habitantes famosos:</p>
+                            <div class="space-y-2 text-lg font-mono text-white">
+                                <p>π ≈ 3.141592653...</p>
+                                <p>√2 ≈ 1.414213562...</p>
+                                <p>e ≈ 2.718281828...</p>
+                                <p>φ ≈ 1.618033988...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Imagen representativa con CSS -->
+                        <div class="bg-pink-700 bg-opacity-30 rounded-lg p-4 text-center">
+                            <div class="w-16 h-16 border-4 border-pink-300 rounded-full mx-auto mb-2 flex items-center justify-center">
+                                <span class="text-pink-300 font-mono text-lg">π</span>
+                            </div>
+                            <p class="text-pink-300 text-sm">Círculo: Circunferencia ÷ Diámetro = π</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <button onclick="toggleExample('example4')" class="btn btn-secondary w-full">
+                            📚 Ver Ejemplos Prácticos
+                        </button>
+                        <div id="example4" class="example-box border-pink-400 hidden">
+                            <p class="font-semibold text-pink-400 mb-3">Ejemplos:</p>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-pink-300 font-semibold">🟢 Ejemplo 1:</p>
+                                    <p class="text-gray-300">La relación entre la circunferencia y el diámetro de cualquier círculo es π (pi). ¡Un irracional fascinante!</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-pink-300 font-semibold">📐 Ejemplo 2:</p>
+                                    <p class="text-gray-300">La diagonal de un cuadrado de lado 1 mide √2. No se puede expresar como fracción exacta.</p>
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <p class="text-pink-300 font-semibold">🌻 Ejemplo 3:</p>
+                                    <p class="text-gray-300">La proporción áurea φ aparece en la naturaleza: girasoles, caracolas, galaxias. ¡Es irracional!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8 space-x-4">
+                    <button onclick="goToScreen(4)" class="btn bg-gray-600 hover:bg-gray-700">
+                        ⬅️ Estación Anterior
+                    </button>
+                    <button onclick="goToScreen(6)" class="btn btn-primary">
+                        Destino Final ➡️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 6: NÚMEROS REALES -->
+    <div id="screen6" class="screen">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="card rounded-3xl p-8 max-w-5xl w-full text-center">
+                <div class="planet inline-block mb-8">
+                    <div class="w-32 h-32 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center text-5xl">
+                        🌌
+                    </div>
+                </div>
+                <h1 class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-400 to-red-400 bg-clip-text text-transparent mb-8">
+                    ¡Galaxia de los Números Reales (ℝ)!
+                </h1>
+                
+                <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                    ¡Felicidades, explorador! Has llegado al destino final donde TODOS los números 
+                    que conoces conviven en armonía. Esta es la galaxia más grande del universo matemático.
+                </p>
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-green-800 bg-opacity-30 p-6 rounded-lg">
+                        <div class="text-3xl mb-2">🌍</div>
+                        <p class="font-semibold text-green-400">Naturales</p>
+                        <p class="text-sm text-gray-400">1, 2, 3...</p>
+                    </div>
+                    <div class="bg-blue-800 bg-opacity-30 p-6 rounded-lg">
+                        <div class="text-3xl mb-2">🌐</div>
+                        <p class="font-semibold text-blue-400">Enteros</p>
+                        <p class="text-sm text-gray-400">...-1, 0, 1...</p>
+                    </div>
+                    <div class="bg-purple-800 bg-opacity-30 p-6 rounded-lg">
+                        <div class="text-3xl mb-2">🛸</div>
+                        <p class="font-semibold text-purple-400">Racionales</p>
+                        <p class="text-sm text-gray-400">1/2, 0.75...</p>
+                    </div>
+                    <div class="bg-pink-800 bg-opacity-30 p-6 rounded-lg">
+                        <div class="text-3xl mb-2">🌌</div>
+                        <p class="font-semibold text-pink-400">Irracionales</p>
+                        <p class="text-sm text-gray-400">π, √2, e...</p>
+                    </div>
+                </div>
+                
+                <p class="text-lg text-gray-300 mb-8">
+                    Ahora comprendes que cada número tiene su lugar y su importancia en este 
+                    increíble universo matemático. ¡Sigue explorando y aprendiendo!
+                </p>
+                
+                <div class="space-x-4">
+                    <button onclick="goToScreen(1)" class="btn btn-primary text-lg">
+                        🚀 REPETIR VIAJE
+                    </button>
+                    <button onclick="goToScreen(5)" class="btn bg-gray-600 hover:bg-gray-700">
+                        ⬅️ Nebulosa Anterior
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Crear estrellas
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Cambiar pantalla
+        function goToScreen(screenNumber) {
+            // Ocultar todas las pantallas
+            const allScreens = document.querySelectorAll('.screen');
+            allScreens.forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Mostrar la pantalla seleccionada
+            const targetScreen = document.getElementById('screen' + screenNumber);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
+            
+            // Scroll al top
+            window.scrollTo(0, 0);
+        }
+
+        // Mostrar/ocultar ejemplos
+        function toggleExample(exampleId) {
+            const example = document.getElementById(exampleId);
+            if (example) {
+                example.classList.toggle('hidden');
+            }
+        }
+
+
+
+        // Soporte para modo oscuro
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            goToScreen(1); // Asegurar que inicie en la pantalla 1
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guerra de Signos - Aprende las Leyes de los Signos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes bounce-in {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        @keyframes slide-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(var(--move-distance)); }
+        }
+
+        @keyframes celebration {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+        
+        .card-appear { animation: bounce-in 0.6s ease-out; }
+        .number-move { animation: slide-move 1.5s ease-in-out; }
+        .celebration { animation: celebration 0.5s ease-in-out; }
+        
+        .positive-card { background: linear-gradient(135deg, #10b981, #065f46); }
+        .negative-card { background: linear-gradient(135deg, #ef4444, #991b1b); }
+        
+        .number-line {
+            background: linear-gradient(90deg, 
+                #ef4444 0%, #ef4444 45%, 
+                #fbbf24 45%, #fbbf24 55%, 
+                #10b981 55%, #10b981 100%);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4">
+                ⚔️ Guerra de Signos ⚔️
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                ¡Aprende las leyes de los signos jugando!
+            </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="progress-section" class="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progreso del Juego</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300" id="round-display">Ronda 1 de 5</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div id="progress-bar" class="progress-bar h-3 rounded-full" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <!-- Score Board -->
+        <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl p-4 mb-6 text-white text-center">
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <div class="text-2xl font-bold" id="correct-count">0</div>
+                    <div class="text-sm">Correctas ✅</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold" id="total-count">0</div>
+                    <div class="text-sm">Total 🎯</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold" id="streak-count">0</div>
+                    <div class="text-sm">Racha 🔥</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 mb-6">
+            <!-- Cards Section -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Card 1 -->
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-4">Carta 1</h3>
+                    <div id="card1-container" class="flex justify-center mb-4">
+                        <div id="card1" class="w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700">
+                            <span class="text-4xl">🎴</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-4">Carta 2</h3>
+                    <div id="card2-container" class="flex justify-center mb-4">
+                        <div id="card2" class="w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700">
+                            <span class="text-4xl">🎴</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Section -->
+            <div id="question-section" class="hidden">
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 mb-6">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-gray-800 dark:text-white">¿Cuál es el resultado?</h3>
+                    <div id="operation-display" class="text-4xl font-bold text-center text-gray-800 dark:text-white mb-6"></div>
+                    
+                    <!-- Answer Input -->
+                    <div class="max-w-sm mx-auto">
+                        <input 
+                            type="number" 
+                            id="answer-input" 
+                            placeholder="Escribe tu respuesta..."
+                            class="w-full text-2xl text-center p-4 border-4 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:border-blue-500 focus:outline-none text-base"
+                        >
+                        <button 
+                            id="check-answer" 
+                            class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-4 rounded-xl transition-all duration-300 transform hover:scale-105">
+                            Comprobar Respuesta ✅
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Section -->
+                <div id="feedback-section" class="hidden mb-6">
+                    <div id="feedback-content" class="rounded-2xl p-6 text-center"></div>
+                </div>
+
+                <!-- Number Line -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-white">Recta Numérica</h3>
+                    <div class="relative bg-gray-200 dark:bg-gray-700 rounded-full h-8 mx-4 overflow-hidden">
+                        <div class="number-line h-full rounded-full"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="flex items-center space-x-8 text-sm font-bold text-white">
+                                <span>-10</span>
+                                <span>-5</span>
+                                <span class="bg-yellow-500 px-2 py-1 rounded">0</span>
+                                <span>+5</span>
+                                <span>+10</span>
+                            </div>
+                        </div>
+                        <div id="position-marker" class="absolute top-1 left-1/2 w-6 h-6 bg-white border-2 border-yellow-500 rounded-full transform -translate-x-1/2 transition-all duration-1500 shadow-lg">
+                            <div class="w-full h-full bg-yellow-400 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="text-center mt-6">
+                    <button id="show-explanation" class="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 rounded-full font-bold mr-4 transition-all duration-300 transform hover:scale-105 hidden">
+                        Ver Explicación 📚
+                    </button>
+                    <button id="next-round" class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 transform hover:scale-105 hidden">
+                        Siguiente Ronda ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <div id="start-section" class="text-center">
+                <button id="start-game" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white text-2xl font-bold px-12 py-6 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                    🎮 ¡Comenzar Juego! 🎮
+                </button>
+                <p class="mt-4 text-gray-600 dark:text-gray-300">Jugarás 5 rondas. ¡Las cartas aparecerán automáticamente!</p>
+            </div>
+
+            <!-- Game Results -->
+            <div id="results-section" class="hidden text-center">
+                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl p-8 mb-6">
+                    <div class="text-6xl mb-4" id="results-emoji">🏆</div>
+                    <h2 class="text-3xl font-bold text-white mb-4" id="results-title">¡Juego Completado!</h2>
+                    <div class="text-xl text-white mb-6" id="results-summary"></div>
+                    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-6">
+                        <div class="bg-white/20 rounded-xl p-4">
+                            <div class="text-2xl font-bold text-white" id="final-correct">0</div>
+                            <div class="text-sm text-white">Correctas</div>
+                        </div>
+                        <div class="bg-white/20 rounded-xl p-4">
+                            <div class="text-2xl font-bold text-white" id="final-percentage">0%</div>
+                            <div class="text-sm text-white">Precisión</div>
+                        </div>
+                    </div>
+                </div>
+                <button id="restart-game" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-2xl font-bold px-12 py-6 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                    🔄 Jugar de Nuevo
+                </button>
+                <p class="mt-4 text-gray-600 dark:text-gray-300">El juego se reiniciará automáticamente en <span id="countdown">10</span> segundos...</p>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">📚 Reglas del Juego</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">Números del mismo signo:</h4>
+                    <ul class="space-y-1 text-gray-600 dark:text-gray-300 text-base">
+                        <li>• Positivo + Positivo = Positivo</li>
+                        <li>• Negativo + Negativo = Negativo</li>
+                        <li>• Se suman los valores</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-red-600 dark:text-red-400 mb-2">Números de signos diferentes:</h4>
+                    <ul class="space-y-1 text-gray-600 dark:text-gray-300 text-base">
+                        <li>• Se restan los valores</li>
+                        <li>• El signo es del número mayor</li>
+                        <li>• ¡El ganador se lleva el signo!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">🎯 Formato del Juego:</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-base">
+                    • Jugarás exactamente 5 rondas por partida<br>
+                    • Al finalizar verás tus resultados completos<br>
+                    • El juego se reinicia automáticamente cada 10 segundos
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode setup
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Game variables
+        let card1Value = null;
+        let card2Value = null;
+        let correctAnswer = null;
+        let correctCount = 0;
+        let totalCount = 0;
+        let currentStreak = 0;
+        let answered = false;
+        let currentRound = 0;
+        let maxRounds = 5;
+        let gameCompleted = false;
+        let countdownInterval = null;
+
+        const cards = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        function drawRandomCard() {
+            return cards[Math.floor(Math.random() * cards.length)];
+        }
+
+        function updateCard(cardElement, value) {
+            cardElement.innerHTML = `
+                <div class="text-4xl font-bold text-white">
+                    ${value > 0 ? '+' : ''}${value}
+                </div>
+            `;
+            cardElement.className = `w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 ${
+                value > 0 ? 'positive-card border-green-300' : 'negative-card border-red-300'
+            }`;
+            cardElement.classList.add('card-appear');
+        }
+
+        function moveMarkerOnNumberLine(position) {
+            const marker = document.getElementById('position-marker');
+            const percentage = ((position + 10) / 20) * 100;
+            marker.style.left = `${percentage}%`;
+        }
+
+        function updateScoreBoard() {
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('streak-count').textContent = currentStreak;
+        }
+
+        function updateProgress() {
+            document.getElementById('round-display').textContent = `Ronda ${currentRound} de ${maxRounds}`;
+            const progressPercentage = (currentRound / maxRounds) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+        }
+
+        function resetGame() {
+            // Reset all game variables
+            card1Value = null;
+            card2Value = null;
+            correctAnswer = null;
+            correctCount = 0;
+            totalCount = 0;
+            currentStreak = 0;
+            answered = false;
+            currentRound = 0;
+            gameCompleted = false;
+
+            // Clear any countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            // Hide all sections except start
+            document.getElementById('start-section').classList.remove('hidden');
+            document.getElementById('question-section').classList.add('hidden');
+            document.getElementById('feedback-section').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('progress-section').classList.add('hidden');
+            document.getElementById('show-explanation').classList.add('hidden');
+            document.getElementById('next-round').classList.add('hidden');
+
+            // Reset cards
+            document.getElementById('card1').innerHTML = '<span class="text-4xl">🎴</span>';
+            document.getElementById('card1').className = 'w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700';
+            
+            document.getElementById('card2').innerHTML = '<span class="text-4xl">🎴</span>';
+            document.getElementById('card2').className = 'w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700';
+            
+            // Reset number line
+            moveMarkerOnNumberLine(0);
+            
+            // Clear input
+            document.getElementById('answer-input').value = '';
+            
+            // Update scoreboard
+            updateScoreBoard();
+        }
+
+        function startNewRound() {
+            if (gameCompleted) return;
+
+            currentRound++;
+            
+            // Show progress section
+            document.getElementById('progress-section').classList.remove('hidden');
+            updateProgress();
+
+            // Reset round variables
+            card1Value = null;
+            card2Value = null;
+            correctAnswer = null;
+            answered = false;
+            
+            // Hide sections
+            document.getElementById('start-section').classList.add('hidden');
+            document.getElementById('question-section').classList.add('hidden');
+            document.getElementById('feedback-section').classList.add('hidden');
+            document.getElementById('show-explanation').classList.add('hidden');
+            document.getElementById('next-round').classList.add('hidden');
+            
+            // Reset cards
+            document.getElementById('card1').innerHTML = '<span class="text-4xl">🎴</span>';
+            document.getElementById('card1').className = 'w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700';
+            
+            document.getElementById('card2').innerHTML = '<span class="text-4xl">🎴</span>';
+            document.getElementById('card2').className = 'w-32 h-48 rounded-xl shadow-lg flex items-center justify-center border-4 border-gray-300 bg-gray-100 dark:bg-gray-700';
+            
+            // Reset number line
+            moveMarkerOnNumberLine(0);
+            
+            // Clear input
+            document.getElementById('answer-input').value = '';
+            
+            // Draw new cards after a short delay for animation
+            setTimeout(() => {
+                card1Value = drawRandomCard();
+                card2Value = drawRandomCard();
+                correctAnswer = card1Value + card2Value;
+                
+                updateCard(document.getElementById('card1'), card1Value);
+                
+                setTimeout(() => {
+                    updateCard(document.getElementById('card2'), card2Value);
+                    
+                    setTimeout(() => {
+                        showQuestion();
+                    }, 600);
+                }, 300);
+            }, 300);
+        }
+
+        function showQuestion() {
+            document.getElementById('question-section').classList.remove('hidden');
+            document.getElementById('operation-display').innerHTML = 
+                `${card1Value > 0 ? '+' : ''}${card1Value} + (${card2Value > 0 ? '+' : ''}${card2Value}) = ?`;
+            document.getElementById('answer-input').focus();
+        }
+
+        function checkAnswer() {
+            if (answered || gameCompleted) return;
+            
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+            const feedbackSection = document.getElementById('feedback-section');
+            const feedbackContent = document.getElementById('feedback-content');
+            
+            if (isNaN(userAnswer)) {
+                feedbackContent.innerHTML = `
+                    <div class="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200">
+                        <div class="text-2xl mb-2">⚠️ Por favor ingresa un número</div>
+                        <div>Escribe tu respuesta en el campo de arriba</div>
+                    </div>
+                `;
+                feedbackSection.classList.remove('hidden');
+                return;
+            }
+            
+            answered = true;
+            totalCount++;
+            
+            if (userAnswer === correctAnswer) {
+                correctCount++;
+                currentStreak++;
+                
+                feedbackContent.innerHTML = `
+                    <div class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200">
+                        <div class="text-4xl mb-2">🎉 ¡Correcto!</div>
+                        <div class="text-xl font-bold mb-2">${card1Value > 0 ? '+' : ''}${card1Value} + (${card2Value > 0 ? '+' : ''}${card2Value}) = ${correctAnswer}</div>
+                        <div>¡Excelente trabajo! ${currentStreak > 1 ? `¡Llevas ${currentStreak} seguidas! 🔥` : ''}</div>
+                    </div>
+                `;
+                
+                moveMarkerOnNumberLine(correctAnswer);
+                
+            } else {
+                currentStreak = 0;
+                
+                feedbackContent.innerHTML = `
+                    <div class="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200">
+                        <div class="text-4xl mb-2">❌ No es correcto</div>
+                        <div class="text-xl font-bold mb-2">Tu respuesta: ${userAnswer}</div>
+                        <div class="text-xl font-bold mb-2">Respuesta correcta: ${correctAnswer}</div>
+                        <div>¡Sigue practicando!</div>
+                    </div>
+                `;
+                
+                document.getElementById('show-explanation').classList.remove('hidden');
+                moveMarkerOnNumberLine(correctAnswer);
+            }
+            
+            feedbackSection.classList.remove('hidden');
+            updateScoreBoard();
+
+            // Check if game is completed
+            if (currentRound >= maxRounds) {
+                gameCompleted = true;
+                setTimeout(showGameResults, 2000);
+            } else {
+                document.getElementById('next-round').classList.remove('hidden');
+            }
+        }
+
+        function showGameResults() {
+            document.getElementById('question-section').classList.add('hidden');
+            document.getElementById('results-section').classList.remove('hidden');
+            
+            const percentage = Math.round((correctCount / totalCount) * 100);
+            const finalCorrect = document.getElementById('final-correct');
+            const finalPercentage = document.getElementById('final-percentage');
+            const resultsTitle = document.getElementById('results-title');
+            const resultsSummary = document.getElementById('results-summary');
+            const resultsEmoji = document.getElementById('results-emoji');
+            
+            finalCorrect.textContent = correctCount;
+            finalPercentage.textContent = `${percentage}%`;
+            
+            // Determine performance message
+            if (percentage === 100) {
+                resultsEmoji.textContent = '🏆';
+                resultsTitle.textContent = '¡PERFECTO!';
+                resultsSummary.textContent = '¡Increíble! ¡Has acertado todas las respuestas!';
+            } else if (percentage >= 80) {
+                resultsEmoji.textContent = '⭐';
+                resultsTitle.textContent = '¡Excelente!';
+                resultsSummary.textContent = '¡Muy buen trabajo! Dominas las leyes de los signos.';
+            } else if (percentage >= 60) {
+                resultsEmoji.textContent = '👍';
+                resultsTitle.textContent = '¡Bien hecho!';
+                resultsSummary.textContent = 'Buen progreso. ¡Sigue practicando para mejorar!';
+            } else {
+                resultsEmoji.textContent = '💪';
+                resultsTitle.textContent = '¡Sigue intentando!';
+                resultsSummary.textContent = 'No te desanimes. La práctica hace al maestro.';
+            }
+
+            // Add celebration animation
+            document.getElementById('results-section').classList.add('celebration');
+            
+            // Start countdown for auto-restart
+            startCountdown();
+        }
+
+        function startCountdown() {
+            let countdown = 10;
+            const countdownElement = document.getElementById('countdown');
+            
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    resetGame();
+                }
+            }, 1000);
+        }
+
+        function showExplanation() {
+            const feedbackContent = document.getElementById('feedback-content');
+            const sameSign = (card1Value > 0 && card2Value > 0) || (card1Value < 0 && card2Value < 0);
+            
+            let explanation = "";
+            if (sameSign) {
+                explanation = `
+                    <div class="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+                        <div class="text-2xl mb-3">📚 Explicación</div>
+                        <div class="text-lg space-y-2">
+                            <div><strong>Regla:</strong> Números del mismo signo (ambos ${card1Value > 0 ? 'positivos' : 'negativos'})</div>
+                            <div><strong>Proceso:</strong> Sumamos los valores: ${Math.abs(card1Value)} + ${Math.abs(card2Value)} = ${Math.abs(correctAnswer)}</div>
+                            <div><strong>Resultado:</strong> Como ambos son ${card1Value > 0 ? 'positivos' : 'negativos'}, el resultado es ${correctAnswer > 0 ? 'positivo' : 'negativo'}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const larger = Math.abs(card1Value) > Math.abs(card2Value) ? card1Value : card2Value;
+                explanation = `
+                    <div class="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+                        <div class="text-2xl mb-3">📚 Explicación</div>
+                        <div class="text-lg space-y-2">
+                            <div><strong>Regla:</strong> Números de signos diferentes</div>
+                            <div><strong>Proceso:</strong> Restamos los valores: ${Math.abs(card1Value)} - ${Math.abs(card2Value)} = ${Math.abs(correctAnswer)}</div>
+                            <div><strong>Signo:</strong> El resultado lleva el signo del número mayor (${larger})</div>
+                            <div><strong>Resultado:</strong> ${correctAnswer}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            feedbackContent.innerHTML = explanation;
+        }
+
+        // Event listeners
+        document.getElementById('start-game').addEventListener('click', startNewRound);
+        document.getElementById('next-round').addEventListener('click', startNewRound);
+        document.getElementById('restart-game').addEventListener('click', () => {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            resetGame();
+        });
+        document.getElementById('check-answer').addEventListener('click', checkAnswer);
+        document.getElementById('show-explanation').addEventListener('click', showExplanation);
+        
+        // Enter key to check answer
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>

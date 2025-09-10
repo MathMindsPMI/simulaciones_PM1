@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío de Argumentos - Juego Educativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Poppins:wght@300;400;600;700&display=swap');
+        
+        .game-font { font-family: 'Fredoka One', cursive; }
+        .text-font { font-family: 'Poppins', sans-serif; }
+        
+        .board-cell {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .board-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .player-piece {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .dice-animation {
+            animation: rollDice 1s ease-in-out;
+        }
+        
+        @keyframes rollDice {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            75% { transform: rotate(270deg) scale(1.1); }
+        }
+        
+        .celebration {
+            animation: celebrate 0.6s ease-in-out;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .board-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .cell-0 { grid-column: 1; grid-row: 1; }
+        .cell-1 { grid-column: 2; grid-row: 1; }
+        .cell-2 { grid-column: 3; grid-row: 1; }
+        .cell-3 { grid-column: 4; grid-row: 1; }
+        .cell-4 { grid-column: 5; grid-row: 1; }
+        .cell-5 { grid-column: 6; grid-row: 1; }
+        .cell-6 { grid-column: 7; grid-row: 1; }
+        .cell-7 { grid-column: 8; grid-row: 1; }
+        .cell-8 { grid-column: 8; grid-row: 2; }
+        .cell-9 { grid-column: 8; grid-row: 3; }
+        .cell-10 { grid-column: 8; grid-row: 4; }
+        .cell-11 { grid-column: 8; grid-row: 5; }
+        .cell-12 { grid-column: 7; grid-row: 5; }
+        .cell-13 { grid-column: 6; grid-row: 5; }
+        .cell-14 { grid-column: 5; grid-row: 5; }
+        .cell-15 { grid-column: 4; grid-row: 5; }
+        .cell-16 { grid-column: 3; grid-row: 5; }
+        .cell-17 { grid-column: 2; grid-row: 5; }
+        .cell-18 { grid-column: 1; grid-row: 5; }
+        .cell-19 { grid-column: 1; grid-row: 4; }
+        .cell-20 { grid-column: 1; grid-row: 3; }
+        .cell-21 { grid-column: 1; grid-row: 2; }
+        .cell-22 { grid-column: 2; grid-row: 2; }
+        .cell-23 { grid-column: 3; grid-row: 2; }
+        .cell-24 { grid-column: 4; grid-row: 2; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#FF6B9D',
+                        accent: '#4ECDC4',
+                        success: '#45B7D1',
+                        warning: '#FFA726'
+                    }
+                }
+            }
+        }
+        
+        // Detectar modo oscuro
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-gray-900 dark:to-purple-900 min-h-screen text-font">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-6xl font-bold text-primary game-font mb-2">
+                <i class="fas fa-brain mr-3"></i>Desafío de Argumentos
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">¿Deductivo o Inductivo? ¡Pon a prueba tu lógica!</p>
+        </div>
+
+        <!-- Panel de Control -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <!-- Equipos -->
+                <div class="flex gap-4">
+                    <div class="team-score bg-blue-100 dark:bg-blue-900 px-4 py-2 rounded-lg">
+                        <span class="font-semibold text-blue-800 dark:text-blue-200">🔵 Equipo 1:</span>
+                        <span id="score1" class="ml-2 font-bold text-xl">0</span>
+                    </div>
+                    <div class="team-score bg-red-100 dark:bg-red-900 px-4 py-2 rounded-lg">
+                        <span class="font-semibold text-red-800 dark:text-red-200">🔴 Equipo 2:</span>
+                        <span id="score2" class="ml-2 font-bold text-xl">0</span>
+                    </div>
+                </div>
+                
+                <!-- Turno Actual -->
+                <div class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-lg">
+                    <span class="font-semibold">Turno: </span>
+                    <span id="currentTeam" class="font-bold">Equipo 1</span>
+                </div>
+                
+                <!-- Dado -->
+                <button id="rollDice" class="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-dice mr-2"></i>
+                    Lanzar Dado
+                    <span id="diceResult" class="ml-2 text-2xl"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tablero de Juego -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+            <div class="board-container" id="gameBoard">
+                <!-- Las casillas se generarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Modal de Argumento -->
+        <div id="argumentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-primary game-font">
+                            <i id="subjectIcon" class="mr-2"></i>
+                            <span id="subjectName"></span>
+                        </h3>
+                        <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                        <p id="argumentText" class="text-lg leading-relaxed text-gray-800 dark:text-gray-200"></p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <p class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
+                            ¿Qué tipo de argumento es este?
+                        </p>
+                        <div class="flex gap-4">
+                            <button id="deductiveBtn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-arrow-down mr-2"></i>
+                                DEDUCTIVO
+                                <div class="text-sm mt-1 opacity-90">General → Específico</div>
+                            </button>
+                            <button id="inductiveBtn" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-arrow-up mr-2"></i>
+                                INDUCTIVO
+                                <div class="text-sm mt-1 opacity-90">Específico → General</div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="feedback" class="hidden p-4 rounded-lg mb-4">
+                        <p id="feedbackText" class="font-semibold"></p>
+                        <p id="explanation" class="text-sm mt-2"></p>
+                    </div>
+                    
+                    <button id="continueBtn" class="w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hidden">
+                        Continuar Juego
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+            <h3 class="text-2xl font-bold text-primary game-font mb-4">
+                <i class="fas fa-question-circle mr-2"></i>¿Cómo Jugar?
+            </h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-lg mb-2 text-blue-600 dark:text-blue-400">
+                        <i class="fas fa-arrow-down mr-2"></i>Argumento Deductivo
+                    </h4>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Va de lo general a lo específico. Si las premisas son verdaderas, la conclusión es necesariamente verdadera.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-2 text-green-600 dark:text-green-400">
+                        <i class="fas fa-arrow-up mr-2"></i>Argumento Inductivo
+                    </h4>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Va de lo específico a lo general. Basado en observaciones particulares para llegar a una conclusión probable.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    <strong>Reglas:</strong> Lanza el dado, avanza por el tablero, lee el argumento y decide si es deductivo o inductivo. ¡Gana puntos por respuestas correctas!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego
+        const gameArguments = [
+            // Biología
+            { text: "Todos los insectos tienen seis patas. La mariposa es un insecto. Por lo tanto, la mariposa tiene seis patas.", type: "deductivo", subject: "Biología", icon: "fas fa-microscope" },
+            { text: "He visto varias plantas crecer más rápido con luz solar directa. Probablemente la luz solar acelere el crecimiento de todas las plantas.", type: "inductivo", subject: "Biología", icon: "fas fa-microscope" },
+            { text: "Los mamíferos son de sangre caliente. El perro es un mamífero. El perro es de sangre caliente.", type: "deductivo", subject: "Biología", icon: "fas fa-microscope" },
+            { text: "Los alumnos que tienen una dieta rica en frutas suelen enfermarse menos. Comer frutas podría ayudar a reducir enfermedades.", type: "inductivo", subject: "Biología", icon: "fas fa-microscope" },
+            { text: "Todos los seres vivos están formados por células. El cactus es un ser vivo. El cactus está formado por células.", type: "deductivo", subject: "Biología", icon: "fas fa-microscope" },
+            
+            // Historia
+            { text: "En la Revolución Francesa la desigualdad social generó conflictos. En la Revolución Mexicana también existió desigualdad social. Es posible que la desigualdad social cause revoluciones.", type: "inductivo", subject: "Historia", icon: "fas fa-landmark" },
+            { text: "Todos los presidentes de México han sido ciudadanos mexicanos. Benito Juárez fue presidente de México. Benito Juárez era ciudadano mexicano.", type: "deductivo", subject: "Historia", icon: "fas fa-landmark" },
+            { text: "En varios países de América Latina, cuando hay crisis económicas surgen protestas sociales. En México, una crisis económica podría generar protestas.", type: "inductivo", subject: "Historia", icon: "fas fa-landmark" },
+            { text: "En 1910 México era gobernado por Porfirio Díaz. Porfirio Díaz era un presidente. En 1910 México era gobernado por un presidente.", type: "deductivo", subject: "Historia", icon: "fas fa-landmark" },
+            { text: "Los imperios en la historia tienden a caer cuando sus recursos se agotan. El Imperio Romano cayó porque sus recursos se agotaron.", type: "inductivo", subject: "Historia", icon: "fas fa-landmark" },
+            
+            // Geografía
+            { text: "Todos los continentes tienen países. África es un continente. África tiene países.", type: "deductivo", subject: "Geografía", icon: "fas fa-globe" },
+            { text: "En varias ciudades con climas fríos se consumen más calorías. En cualquier ciudad fría probablemente se consuman más calorías.", type: "inductivo", subject: "Geografía", icon: "fas fa-globe" },
+            { text: "El ecuador divide al planeta en hemisferio norte y sur. Brasil se encuentra cruzado por el ecuador. Brasil está en ambos hemisferios.", type: "deductivo", subject: "Geografía", icon: "fas fa-globe" },
+            { text: "Muchas regiones con ríos grandes tienen agricultura abundante. Una región con un río grande probablemente tenga agricultura abundante.", type: "inductivo", subject: "Geografía", icon: "fas fa-globe" },
+            { text: "Todos los océanos contienen agua salada. El Océano Pacífico es un océano. El Océano Pacífico contiene agua salada.", type: "deductivo", subject: "Geografía", icon: "fas fa-globe" },
+            
+            // Matemáticas y Lógica
+            { text: "Todos los números pares son divisibles entre 2. El número 14 es par. El 14 es divisible entre 2.", type: "deductivo", subject: "Matemáticas", icon: "fas fa-calculator" },
+            { text: "He visto que varios estudiantes que estudian más de 2 horas diarias sacan buenas calificaciones. Estudiar más de 2 horas diarias probablemente mejora las calificaciones.", type: "inductivo", subject: "Matemáticas", icon: "fas fa-calculator" },
+            { text: "Si todos los ángulos de un triángulo suman 180°. Este triángulo tiene dos ángulos de 60°. El tercer ángulo mide 60°.", type: "deductivo", subject: "Matemáticas", icon: "fas fa-calculator" },
+            { text: "Varios exámenes de matemáticas de años anteriores han sido difíciles. El próximo examen probablemente será difícil.", type: "inductivo", subject: "Matemáticas", icon: "fas fa-calculator" },
+            { text: "Todos los cuadrados son rectángulos. El cuadrado ABCD es un cuadrado. El cuadrado ABCD es un rectángulo.", type: "deductivo", subject: "Matemáticas", icon: "fas fa-calculator" },
+            
+            // Vida cotidiana
+            { text: "Todas las personas necesitan oxígeno para vivir. María es una persona. María necesita oxígeno para vivir.", type: "deductivo", subject: "Vida Cotidiana", icon: "fas fa-heart" },
+            { text: "He visto que cuando los jóvenes pasan mucho tiempo en redes sociales, se distraen más en clase. El uso excesivo de redes sociales probablemente reduce la concentración.", type: "inductivo", subject: "Vida Cotidiana", icon: "fas fa-heart" },
+            { text: "Todos los automóviles requieren combustible. El auto de Luis es un automóvil. El auto de Luis requiere combustible.", type: "deductivo", subject: "Vida Cotidiana", icon: "fas fa-heart" },
+            { text: "En varias películas los superhéroes usan capa. Es probable que todos los superhéroes usen capa.", type: "inductivo", subject: "Vida Cotidiana", icon: "fas fa-heart" },
+            { text: "Si todos los perros son animales y todos los animales respiran, entonces los perros respiran.", type: "deductivo", subject: "Vida Cotidiana", icon: "fas fa-heart" }
+        ];
+
+        // Variables del juego
+        let currentTeam = 1;
+        let scores = { 1: 0, 2: 0 };
+        let positions = { 1: 0, 2: 0 };
+        let currentArgument = null;
+        let gameStarted = false;
+
+        // Colores para las materias
+        const subjectColors = {
+            "Biología": "bg-green-200 dark:bg-green-800 border-green-300",
+            "Historia": "bg-yellow-200 dark:bg-yellow-800 border-yellow-300", 
+            "Geografía": "bg-blue-200 dark:bg-blue-800 border-blue-300",
+            "Matemáticas": "bg-purple-200 dark:bg-purple-800 border-purple-300",
+            "Vida Cotidiana": "bg-pink-200 dark:bg-pink-800 border-pink-300"
+        };
+
+        // Inicializar el juego
+        function initGame() {
+            createBoard();
+            updateUI();
+        }
+
+        // Crear el tablero
+        function createBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = `board-cell cell-${i} ${subjectColors[gameArguments[i].subject]} border-2 rounded-lg p-3 h-20 flex flex-col items-center justify-center text-center relative cursor-pointer`;
+                cell.setAttribute('data-position', i);
+                
+                if (i === 0) {
+                    cell.innerHTML = `
+                        <i class="fas fa-flag text-2xl text-green-600 mb-1"></i>
+                        <span class="text-xs font-bold">INICIO</span>
+                    `;
+                } else {
+                    cell.innerHTML = `
+                        <i class="${gameArguments[i].icon} text-lg mb-1"></i>
+                        <span class="text-xs font-semibold">${gameArguments[i].subject}</span>
+                    `;
+                }
+                
+                cell.addEventListener('click', () => showArgument(i));
+                board.appendChild(cell);
+            }
+            
+            // Agregar fichas de jugadores
+            updatePlayerPositions();
+        }
+
+        // Actualizar posiciones de jugadores
+        function updatePlayerPositions() {
+            // Remover fichas existentes
+            document.querySelectorAll('.player-piece').forEach(piece => piece.remove());
+            
+            // Agregar fichas actuales
+            for (let team = 1; team <= 2; team++) {
+                const position = positions[team];
+                const cell = document.querySelector(`[data-position="${position}"]`);
+                if (cell) {
+                    const piece = document.createElement('div');
+                    piece.className = `player-piece absolute ${team === 1 ? 'top-1 left-1' : 'top-1 right-1'} w-6 h-6 rounded-full border-2 border-white shadow-lg`;
+                    piece.style.backgroundColor = team === 1 ? '#3B82F6' : '#EF4444';
+                    piece.innerHTML = `<span class="text-white text-xs font-bold flex items-center justify-center h-full">${team}</span>`;
+                    cell.appendChild(piece);
+                }
+            }
+        }
+
+        // Lanzar dado
+        document.getElementById('rollDice').addEventListener('click', () => {
+            if (!gameStarted) gameStarted = true;
+            
+            const diceBtn = document.getElementById('rollDice');
+            const diceResult = document.getElementById('diceResult');
+            
+            diceBtn.disabled = true;
+            diceBtn.classList.add('dice-animation');
+            
+            setTimeout(() => {
+                const roll = Math.floor(Math.random() * 6) + 1;
+                diceResult.textContent = roll;
+                
+                // Mover jugador
+                positions[currentTeam] = Math.min(positions[currentTeam] + roll, 24);
+                updatePlayerPositions();
+                
+                // Mostrar argumento si no está en inicio
+                if (positions[currentTeam] > 0) {
+                    setTimeout(() => showArgument(positions[currentTeam]), 500);
+                } else {
+                    switchTurn();
+                }
+                
+                diceBtn.classList.remove('dice-animation');
+                diceBtn.disabled = false;
+            }, 1000);
+        });
+
+        // Mostrar argumento
+        function showArgument(position) {
+            if (position === 0) return;
+            
+            currentArgument = gameArguments[position];
+            const modal = document.getElementById('argumentModal');
+            const subjectIcon = document.getElementById('subjectIcon');
+            const subjectName = document.getElementById('subjectName');
+            const argumentText = document.getElementById('argumentText');
+            const feedback = document.getElementById('feedback');
+            const continueBtn = document.getElementById('continueBtn');
+            
+            subjectIcon.className = currentArgument.icon;
+            subjectName.textContent = currentArgument.subject;
+            argumentText.textContent = currentArgument.text;
+            
+            feedback.classList.add('hidden');
+            continueBtn.classList.add('hidden');
+            
+            // Habilitar botones de respuesta
+            document.getElementById('deductiveBtn').disabled = false;
+            document.getElementById('inductiveBtn').disabled = false;
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Manejar respuestas
+        document.getElementById('deductiveBtn').addEventListener('click', () => checkAnswer('deductivo'));
+        document.getElementById('inductiveBtn').addEventListener('click', () => checkAnswer('inductivo'));
+
+        // Verificar respuesta
+        function checkAnswer(answer) {
+            const feedback = document.getElementById('feedback');
+            const feedbackText = document.getElementById('feedbackText');
+            const explanation = document.getElementById('explanation');
+            const continueBtn = document.getElementById('continueBtn');
+            
+            // Deshabilitar botones
+            document.getElementById('deductiveBtn').disabled = true;
+            document.getElementById('inductiveBtn').disabled = true;
+            
+            const isCorrect = answer === currentArgument.type;
+            
+            if (isCorrect) {
+                scores[currentTeam]++;
+                feedback.className = 'p-4 rounded-lg mb-4 bg-green-100 dark:bg-green-900 border border-green-300';
+                feedbackText.textContent = '¡Correcto! 🎉';
+                feedbackText.className = 'font-semibold text-green-800 dark:text-green-200';
+                
+                // Animación de celebración
+                feedback.classList.add('celebration');
+                setTimeout(() => feedback.classList.remove('celebration'), 600);
+            } else {
+                feedback.className = 'p-4 rounded-lg mb-4 bg-red-100 dark:bg-red-900 border border-red-300';
+                feedbackText.textContent = 'Incorrecto 😔';
+                feedbackText.className = 'font-semibold text-red-800 dark:text-red-200';
+            }
+            
+            // Explicación
+            if (currentArgument.type === 'deductivo') {
+                explanation.textContent = 'Este es un argumento DEDUCTIVO porque va de premisas generales a una conclusión específica necesaria.';
+            } else {
+                explanation.textContent = 'Este es un argumento INDUCTIVO porque va de observaciones específicas a una conclusión general probable.';
+            }
+            explanation.className = 'text-sm mt-2 text-gray-600 dark:text-gray-300';
+            
+            feedback.classList.remove('hidden');
+            continueBtn.classList.remove('hidden');
+            
+            updateUI();
+        }
+
+        // Continuar juego
+        document.getElementById('continueBtn').addEventListener('click', () => {
+            document.getElementById('argumentModal').classList.add('hidden');
+            switchTurn();
+        });
+
+        // Cambiar turno
+        function switchTurn() {
+            currentTeam = currentTeam === 1 ? 2 : 1;
+            updateUI();
+            
+            // Verificar fin del juego
+            if (positions[1] === 24 || positions[2] === 24) {
+                showGameEnd();
+            }
+        }
+
+        // Actualizar interfaz
+        function updateUI() {
+            document.getElementById('score1').textContent = scores[1];
+            document.getElementById('score2').textContent = scores[2];
+            document.getElementById('currentTeam').textContent = `Equipo ${currentTeam}`;
+            document.getElementById('diceResult').textContent = '';
+        }
+
+        // Mostrar fin del juego
+        function showGameEnd() {
+            let winner;
+            if (positions[1] === 24 && positions[2] === 24) {
+                winner = scores[1] > scores[2] ? 1 : scores[2] > scores[1] ? 2 : 'empate';
+            } else {
+                winner = positions[1] === 24 ? 1 : 2;
+            }
+            
+            setTimeout(() => {
+                showCustomAlert(
+                    winner === 'empate' ? '¡Empate!' : `¡Equipo ${winner} Gana!`,
+                    winner === 'empate' ? 
+                        `Ambos equipos llegaron al final. Puntuación final: Equipo 1: ${scores[1]}, Equipo 2: ${scores[2]}` :
+                        `Puntuación final: Equipo 1: ${scores[1]}, Equipo 2: ${scores[2]}`,
+                    () => {
+                        showConfirmDialog('¿Quieren jugar otra vez?', () => {
+                            // Reiniciar juego
+                            currentTeam = 1;
+                            scores = { 1: 0, 2: 0 };
+                            positions = { 1: 0, 2: 0 };
+                            gameStarted = false;
+                            initGame();
+                        });
+                    }
+                );
+            }, 1000);
+        }
+
+        // Funciones de modal personalizadas
+        function showCustomAlert(title, message, onClose) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <h3 class="text-xl font-bold text-primary mb-4">${title}</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <button class="w-full px-4 py-2 bg-primary text-white hover:bg-primary/80 rounded" onclick="this.closest('.fixed').remove(); if(typeof arguments[0] === 'function') arguments[0]()">OK</button>
+                </div>
+            `;
+            modal.querySelector('button').onclick = () => {
+                modal.remove();
+                if (onClose) onClose();
+            };
+            document.body.appendChild(modal);
+        }
+
+        function showConfirmDialog(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <div class="flex justify-end space-x-3">
+                        <button class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onclick="this.closest('.fixed').remove()">Cancelar</button>
+                        <button class="px-4 py-2 bg-primary text-white hover:bg-primary/80 rounded" onclick="this.closest('.fixed').remove(); if(typeof arguments[0] === 'function') arguments[0]()">Confirmar</button>
+                    </div>
+                </div>
+            `;
+            modal.querySelectorAll('button')[1].onclick = () => {
+                modal.remove();
+                if (onConfirm) onConfirm();
+            };
+            document.body.appendChild(modal);
+        }
+
+        // Cerrar modal
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('argumentModal').classList.add('hidden');
+        });
+
+        // Inicializar el juego
+        initGame();
+    </script>
+</body>
+</html>
