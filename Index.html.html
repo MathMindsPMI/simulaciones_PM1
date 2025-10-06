@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathSimulator - Centro Educativo Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#FF6B6B',
+                        accent: '#4ECDC4',
+                        success: '#45B7D1',
+                        warning: '#FFA726',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .number-line { background: linear-gradient(to right, #ff4444 0%, #ff4444 40%, #4444ff 60%, #4444ff 100%); }
+        .particle { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .pulse-animation { animation: pulse 2s infinite; }
+        .bounce-in { animation: bounceIn 0.6s ease-out; }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-full">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🧮</span>
+                    </div>
+                    <h1 class="text-xl font-bold">MathSimulator</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white bg-opacity-20 rounded-lg px-3 py-1">
+                        <span class="text-sm">Puntos: <span id="totalPoints">0</span></span>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-lg px-3 py-1">
+                        <span class="text-sm">Nivel: <span id="userLevel">1</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto space-x-1 py-2">
+                <button class="tab-btn active flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white" data-tab="home">
+                    🏠 Inicio
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="budget">
+                    💰 Presupuesto
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="signs">
+                    ⚡ Signos
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="garden">
+                    🌱 Jardín
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="hierarchy">
+                    📐 Jerarquía
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="logic">
+                    🧠 Lógica
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="arguments">
+                    🎯 Argumentos
+                </button>
+                <button class="tab-btn flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="numbers">
+                    🚀 Números
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Home Tab -->
+        <div id="home" class="tab-content active">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">¡Bienvenido al Centro Educativo Digital!</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">Explora simulaciones interactivas para aprender matemáticas de forma divertida</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('budget')">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-xl font-bold mb-2">Presupuesto Escolar</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Calcula costos de viajes escolares y aprende sobre presupuestos</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('signs')">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-2">Regla de Signos</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Simula operaciones con números positivos y negativos</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('garden')">
+                    <div class="text-4xl mb-4">🌱</div>
+                    <h3 class="text-xl font-bold mb-2">Jardín Matemático</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Aplica geometría y álgebra en el diseño de jardines</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('hierarchy')">
+                    <div class="text-4xl mb-4">📐</div>
+                    <h3 class="text-xl font-bold mb-2">Jerarquía de Operaciones</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Aprende el orden correcto para resolver expresiones</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('logic')">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-xl font-bold mb-2">Conectores Lógicos</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Explora proposiciones y tablas de verdad</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('arguments')">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold mb-2">Argumentos Lógicos</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Diferencia entre argumentos deductivos e inductivos</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer" onclick="switchTab('numbers')">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold mb-2">Clasificación de Números</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Viaja por la galaxia numérica</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Tab -->
+        <div id="budget" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">💰 Presupuesto de Viaje Escolar</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">¡Usa tus habilidades matemáticas para planificar nuestra aventura al Museo El Laberinto!</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold mb-4">📊 Datos del Viaje</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Cantidad de alumnos:</label>
+                            <input type="number" id="students" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="30">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Distancia (km, solo ida):</label>
+                            <input type="number" id="distance" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="50">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Costo de Entrada al Museo ($):</label>
+                            <input type="number" id="museumCost" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="15">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Presupuesto de Comida (por alumno, $):</label>
+                            <input type="number" id="foodBudget" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="25">
+                        </div>
+
+                        <button onclick="calculateBudget()" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
+                            💰 Calcular Presupuesto
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold mb-4">📋 Cálculos del Presupuesto</h3>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span>Costo Total del Transporte:</span>
+                                <span class="font-bold text-primary" id="transportCost">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span>Costo por Estudiante (sin imprevistos):</span>
+                                <span class="font-bold text-primary" id="costPerStudent">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span>Costo del Grupo (sin imprevistos):</span>
+                                <span class="font-bold text-primary" id="groupCost">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span>Fondo para Imprevistos (10%):</span>
+                                <span class="font-bold text-warning" id="contingencyFund">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span>Costo por Estudiante (con imprevistos):</span>
+                                <span class="font-bold text-secondary" id="finalCostPerStudent">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t pt-2">
+                                <span class="text-lg font-bold">Costo Total Final del Viaje:</span>
+                                <span class="text-lg font-bold text-success" id="finalTotalCost">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signs Tab -->
+        <div id="signs" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">⚡ Simulación: Regla de los Signos</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">¡Descubre cómo las fuerzas positivas y negativas interactúan!</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-r from-green-100 to-red-100 dark:from-green-900 dark:to-red-900 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-4">🚀 Simulación Interactiva</h3>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Tipo de Operación:</label>
+                                    <select id="operationType" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700">
+                                        <option value="*">× Multiplicación</option>
+                                        <option value="+">+ Suma</option>
+                                        <option value="-">- Resta</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Primera Fuerza:</label>
+                                    <select id="firstSign" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700">
+                                        <option value="+">+ (Positiva)</option>
+                                        <option value="-">- (Negativa)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Segunda Fuerza:</label>
+                                    <select id="secondSign" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700">
+                                        <option value="+">+ (Positiva)</option>
+                                        <option value="-">- (Negativa)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Segundo Número:</label>
+                                    <input type="number" id="secondNumber" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700" value="3">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">Primer Número:</label>
+                                <input type="number" id="firstNumber" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700" value="5">
+                            </div>
+
+                            <button onclick="simulateOperation()" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-yellow-500 hover:to-orange-600 transition-all">
+                                ⚡ ¡SIMULAR COLISIÓN! ⚡
+                            </button>
+                        </div>
+
+                        <div id="operationResult" class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg hidden">
+                            <h4 class="font-semibold mb-2">Resultado:</h4>
+                            <div class="text-2xl font-bold text-center py-4" id="resultDisplay"></div>
+                            <div id="explanationText" class="text-sm text-gray-600 dark:text-gray-400"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">📏 Recta Numérica Expandida</h3>
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                            <div class="relative h-16 number-line rounded-lg mb-4 flex items-center justify-center">
+                                <div class="absolute w-full h-1 bg-gray-800 top-1/2 transform -translate-y-1/2"></div>
+                                <div id="numberPosition" class="absolute w-6 h-6 bg-yellow-400 rounded-full border-2 border-gray-800 transition-all duration-1000" style="left: 50%; transform: translateX(-50%);">
+                                    <span class="text-xs">👤</span>
+                                </div>
+                                <!-- Number markers -->
+                                <div class="absolute inset-0 flex justify-between items-center px-2">
+                                    <span class="text-xs">-20</span>
+                                    <span class="text-xs">-10</span>
+                                    <span class="text-xs">0</span>
+                                    <span class="text-xs">10</span>
+                                    <span class="text-xs">20</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <div>Posición actual: <span id="currentPosition" class="font-bold">0</span></div>
+                                <div>Paso 1: <span id="step1">Comenzamos en 0</span></div>
+                                <div>Paso 2: <span id="step2">Nos movemos...</span></div>
+                                <div>Resultado: <span id="step3">¡Llegamos a...</span></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="text-lg font-semibold mb-4">🎯 ¡Practica y Demuestra lo que Sabes!</h3>
+                            <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg">
+                                <div class="text-center mb-4">
+                                    <span class="text-2xl" id="practiceQuestion">+5 × -3 = ?</span>
+                                </div>
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="answerPractice(true)" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">✅ POSITIVO</button>
+                                    <button onclick="answerPractice(false)" class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">❌ NEGATIVO</button>
+                                </div>
+                                <div class="text-center">
+                                    <span>Correctas: <span id="correctAnswers" class="text-green-600 font-bold">0</span> | Incorrectas: <span id="incorrectAnswers" class="text-red-600 font-bold">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Garden Tab -->
+        <div id="garden" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">🌱 El Jardín Matemático</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">Aplica tus conocimientos de geometría y álgebra para diseñar un jardín y calcular su presupuesto.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">1. Diseño y Medidas</h3>
+                        <div class="bg-green-50 dark:bg-green-900 p-6 rounded-lg mb-6">
+                            <div class="w-full h-40 bg-gradient-to-br from-green-200 to-green-400 dark:from-green-700 dark:to-green-900 rounded-lg border-4 border-brown-400 mb-4 flex items-center justify-center">
+                                <span class="text-6xl">🌳🌺🌱</span>
+                            </div>
+                            <p class="text-sm text-center text-gray-600 dark:text-gray-400">Imagina que este es tu diseño. Ingresa las medidas para calcular los costos.</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Área de Plantas (m²):</label>
+                                <input type="number" id="plantArea" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="10">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Área de Pasto (m²):</label>
+                                <input type="number" id="grassArea" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="20">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Perímetro a Cercar (metros):</label>
+                                <input type="number" id="perimeter" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="15">
+                            </div>
+
+                            <button onclick="calculateGarden()" class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                                🌱 Calcular Presupuesto del Jardín
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">2. Expresiones y Costos</h3>
+                        
+                        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold mb-2">Precios por unidad:</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li>• Área de plantas: $150 por m²</li>
+                                <li>• Área de pasto: $40 por m²</li>
+                                <li>• Cercado: $350 por metro lineal</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold mb-2">Expresión Algebraica:</h4>
+                            <div class="text-sm font-mono bg-white dark:bg-gray-800 p-2 rounded">
+                                Costo Total = (150 × Área de Plantas) + (40 × Área de Pasto) + (350 × Perímetro)
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h4 class="font-semibold">📊 Cálculos Finales</h4>
+                            
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Costo de Plantas:</span>
+                                    <span class="font-bold text-green-600" id="plantsCost">$0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Costo de Pasto:</span>
+                                    <span class="font-bold text-green-500" id="grassCost">$0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Costo de Cercado:</span>
+                                    <span class="font-bold text-yellow-600" id="fenceCost">$0.00</span>
+                                </div>
+                                <div class="border-t pt-2 flex justify-between">
+                                    <span class="text-lg font-bold">Costo Total del Jardín:</span>
+                                    <span class="text-lg font-bold text-primary" id="totalGardenCost">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hierarchy Tab -->
+        <div id="hierarchy" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">📐 Jerarquía de Operaciones</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">Aprende el orden correcto para resolver expresiones matemáticas</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">📋 Orden de Operaciones</h3>
+                        
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center justify-between bg-red-100 dark:bg-red-900 p-3 rounded-lg">
+                                <span class="flex items-center"><span class="text-2xl mr-2">( )</span> Paréntesis</span>
+                                <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">1° Primero</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-orange-100 dark:bg-orange-900 p-3 rounded-lg">
+                                <span class="flex items-center"><span class="text-2xl mr-2">x²</span> Potencias</span>
+                                <span class="bg-orange-500 text-white px-2 py-1 rounded text-sm">2° Segundo</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
+                                <span class="flex items-center"><span class="text-2xl mr-2">× ÷</span> Multiplicación/División</span>
+                                <span class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">3° Tercero</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                                <span class="flex items-center"><span class="text-2xl mr-2">+ -</span> Suma/Resta</span>
+                                <span class="bg-green-500 text-white px-2 py-1 rounded text-sm">4° Cuarto</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-3">🎯 Ejemplo Interactivo</h4>
+                            <div class="text-center mb-4">
+                                <div class="text-lg font-mono bg-white dark:bg-gray-800 p-2 rounded mb-2">
+                                    <span id="currentExpression">3 + 2 × (4 + 1)² - 8 ÷ 2</span>
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400" id="stepDescription">
+                                    Haz clic en "Siguiente Paso" para comenzar la resolución
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="nextStep()" id="nextStepBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                                    Siguiente Paso →
+                                </button>
+                                <button onclick="resetExample()" class="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600">
+                                    🔄 Reiniciar
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-1 mt-2">
+                                <button onclick="loadExample(1)" class="flex-1 bg-purple-500 text-white py-1 rounded text-sm hover:bg-purple-600">Ejemplo 1</button>
+                                <button onclick="loadExample(2)" class="flex-1 bg-purple-500 text-white py-1 rounded text-sm hover:bg-purple-600">Ejemplo 2</button>
+                                <button onclick="loadExample(3)" class="flex-1 bg-purple-500 text-white py-1 rounded text-sm hover:bg-purple-600">Ejemplo 3</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">✏️ ¡Practica tu Respuesta!</h3>
+                        
+                        <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold mb-2">Resuelve esta expresión:</h4>
+                            <div class="text-xl text-center font-mono bg-white dark:bg-gray-800 p-3 rounded mb-4" id="practiceExpression">
+                                6 + 3 × 2 - 1
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">Escribe tu respuesta:</label>
+                                <input type="number" id="userAnswer" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700">
+                            </div>
+                            
+                            <div class="flex gap-2 mb-4">
+                                <button onclick="checkAnswer()" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                                    Verificar Respuesta ✓
+                                </button>
+                                <button onclick="showSolution()" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                                    Ver Solución 👁️
+                                </button>
+                            </div>
+                            
+                            <button onclick="newExercise()" class="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600">
+                                Nuevo Ejercicio 🔄
+                            </button>
+                        </div>
+
+                        <div id="solutionSteps" class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg hidden">
+                            <h4 class="font-semibold mb-2">📝 Solución paso a paso:</h4>
+                            <div id="solutionContent" class="space-y-2 text-sm"></div>
+                        </div>
+
+                        <div id="answerFeedback" class="p-4 rounded-lg hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logic Tab -->
+        <div id="logic" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">🧠 Simulador de Conectores Lógicos</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">¡Aprende lógica matemática de manera divertida e interactiva!</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">📝 Define tus Proposiciones:</h3>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Proposición P:</label>
+                                <input type="text" id="propP" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="Llueve">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Proposición Q:</label>
+                                <input type="text" id="propQ" class="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700" value="Hace frío">
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mb-4">🔗 Selecciona un Conector Lógico:</h3>
+                        
+                        <div class="grid grid-cols-1 gap-2 mb-6">
+                            <button onclick="selectConnector('and')" class="connector-btn p-3 text-left bg-blue-100 dark:bg-blue-900 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                                <span class="font-semibold">∧ Conjunción (AND)</span> - Verdadero solo si ambas proposiciones son verdaderas
+                            </button>
+                            <button onclick="selectConnector('or')" class="connector-btn p-3 text-left bg-green-100 dark:bg-green-900 rounded-lg hover:bg-green-200 dark:hover:bg-green-800 transition-colors">
+                                <span class="font-semibold">∨ Disyunción (OR)</span> - Verdadero si al menos una proposición es verdadera
+                            </button>
+                            <button onclick="selectConnector('not')" class="connector-btn p-3 text-left bg-red-100 dark:bg-red-900 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                                <span class="font-semibold">¬ Negación (NOT)</span> - Invierte el valor de verdad
+                            </button>
+                            <button onclick="selectConnector('implies')" class="connector-btn p-3 text-left bg-purple-100 dark:bg-purple-900 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
+                                <span class="font-semibold">→ Implicación</span> - Falso solo cuando P es verdadero y Q es falso
+                            </button>
+                            <button onclick="selectConnector('iff')" class="connector-btn p-3 text-left bg-yellow-100 dark:bg-yellow-900 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors">
+                                <span class="font-semibold">↔ Bicondicional</span> - Verdadero cuando ambas tienen el mismo valor
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2">🔌 Circuito Visual</h4>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Entrada P:</label>
+                                    <div class="flex gap-2">
+                                        <button onclick="setLogicValue('P', false)" id="pFalse" class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">OFF</button>
+                                        <button onclick="setLogicValue('P', true)" id="pTrue" class="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-green-600">ON</button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Entrada Q:</label>
+                                    <div class="flex gap-2">
+                                        <button onclick="setLogicValue('Q', false)" id="qFalse" class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">OFF</button>
+                                        <button onclick="setLogicValue('Q', true)" id="qTrue" class="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-green-600">ON</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="inline-flex items-center space-x-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center" id="circuitP">P</div>
+                                    <div class="text-2xl" id="circuitOperator">∧</div>
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center" id="circuitQ">Q</div>
+                                    <span>=</span>
+                                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" id="circuitResult">?</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">📊 Tabla de Verdad</h3>
+                        
+                        <div class="overflow-x-auto mb-6">
+                            <table class="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                                <thead>
+                                    <tr class="bg-gray-100 dark:bg-gray-700">
+                                        <th class="border border-gray-300 dark:border-gray-600 p-2">P</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 p-2">Q</th>
+                                        <th class="border border-gray-300 dark:border-gray-600 p-2" id="resultHeader">Resultado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="truthTableBody">
+                                    <tr>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">V</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">V</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">V</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">F</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">F</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">V</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">F</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">F</td>
+                                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold mb-2">💡 Explicación Lógica</h4>
+                            <div id="logicExplanation" class="text-sm">
+                                Selecciona una compuerta para ver su explicación.
+                            </div>
+                        </div>
+
+                        <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2">📊 Estado Actual</h4>
+                            <div class="space-y-2 text-sm">
+                                <div>Proposición P: <span id="currentP" class="font-bold">FALSO</span></div>
+                                <div>Proposición Q: <span id="currentQ" class="font-bold">FALSO</span></div>
+                                <div>Resultado: <span id="currentResult" class="font-bold">FALSO</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arguments Tab -->
+        <div id="arguments" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">🎯 Desafío de Argumentos</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">¿Deductivo o Inductivo? ¡Pon a prueba tu lógica!</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <div class="bg-gradient-to-r from-blue-100 to-red-100 dark:from-blue-900 dark:to-red-900 p-6 rounded-lg mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-center">
+                                    <div class="text-2xl">🔵</div>
+                                    <div class="font-bold">Equipo 1:</div>
+                                    <div class="text-2xl font-bold text-blue-600" id="team1Score">0</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-lg font-semibold">Turno:</div>
+                                    <div class="text-lg font-bold" id="currentTurn">Equipo 1</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl">🔴</div>
+                                    <div class="font-bold">Equipo 2:</div>
+                                    <div class="text-2xl font-bold text-red-600" id="team2Score">0</div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="rollDice()" class="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors mb-4">
+                                🎲 Lanzar Dado
+                            </button>
+                            
+                            <div class="text-center">
+                                <div class="text-4xl mb-2" id="diceResult">🎲</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400" id="diceMessage">¡Lanza el dado para comenzar!</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-4">¿Cómo Jugar?</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-blue-100 dark:bg-blue-800 p-3 rounded-lg">
+                                    <h4 class="font-semibold text-blue-800 dark:text-blue-200">🔍 Argumento Deductivo</h4>
+                                    <p class="text-sm text-blue-700 dark:text-blue-300">Va de lo general a lo específico. Si las premisas son verdaderas, la conclusión es necesariamente verdadera.</p>
+                                </div>
+                                
+                                <div class="bg-green-100 dark:bg-green-800 p-3 rounded-lg">
+                                    <h4 class="font-semibold text-green-800 dark:text-green-200">🔍 Argumento Inductivo</h4>
+                                    <p class="text-sm text-green-700 dark:text-green-300">Va de lo específico a lo general. Basado en observaciones particulares para llegar a una conclusión probable.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-yellow-100 dark:bg-yellow-800 rounded-lg">
+                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">📋 Reglas:</h4>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-300">Lanza el dado, avanza por el tablero, lee el argumento y decide si es deductivo o inductivo. ¡Gana puntos por respuestas correctas!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
+                            <h3 class="text-lg font-semibold mb-4">💭 Argumento Actual</h3>
+                            
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+                                <p class="text-lg mb-4" id="currentArgument">
+                                    Lanza el dado para obtener un argumento...
+                                </p>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <h4 class="font-semibold mb-2">¿Qué tipo de argumento es este?</h4>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 gap-3">
+                                <button onclick="selectArgumentType('deductive')" class="argument-btn bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                                    <div class="font-bold">🔍 DEDUCTIVO</div>
+                                    <div class="text-sm">General → Específico</div>
+                                </button>
+                                
+                                <button onclick="selectArgumentType('inductive')" class="argument-btn bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                                    <div class="font-bold">🔍 INDUCTIVO</div>
+                                    <div class="text-sm">Específico → General</div>
+                                </button>
+                            </div>
+                            
+                            <button onclick="continueGame()" id="continueBtn" class="w-full bg-purple-500 text-white py-3 rounded-lg font-semibold hover:bg-purple-600 transition-colors mt-4" disabled>
+                                Continuar Juego
+                            </button>
+                        </div>
+
+                        <div id="argumentFeedback" class="p-4 rounded-lg hidden">
+                            <h4 class="font-semibold mb-2">📝 Explicación:</h4>
+                            <p id="explanationText" class="text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Numbers Tab -->
+        <div id="numbers" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">🚀 Explorando la Galaxia Numérica</h2>
+                <p class="text-center text-gray-600 dark:text-gray-400 mb-8">Embárquate en un viaje fascinante por el universo de los números matemáticos</p>
+
+                <div class="text-center mb-8">
+                    <button onclick="startGalacticJourney()" class="bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-600 transition-all transform hover:scale-105">
+                        🚀 INICIAR VIAJE GALÁCTICO
+                    </button>
+                </div>
+
+                <div id="galaxyContent">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 p-6 rounded-xl cursor-pointer hover:shadow-lg transition-all" onclick="visitPlanet('natural')">
+                            <div class="text-center mb-4">
+                                <span class="text-4xl">🌍</span>
+                                <h3 class="text-xl font-bold text-green-800 dark:text-green-200">Planeta de los Números Naturales (ℕ)</h3>
+                            </div>
+                            <p class="text-sm text-green-700 dark:text-green-300">Los números más básicos y amigables: 1, 2, 3, 4, 5...</p>
+                            <div class="flex justify-center mt-3">
+                                <span class="text-2xl">🍎🍎🍎🍎🍎</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 p-6 rounded-xl cursor-pointer hover:shadow-lg transition-all" onclick="visitPlanet('integer')">
+                            <div class="text-center mb-4">
+                                <span class="text-4xl">🌐</span>
+                                <h3 class="text-xl font-bold text-blue-800 dark:text-blue-200">Planeta de los Números Enteros (ℤ)</h3>
+                            </div>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">Incluye negativos, cero y positivos: ...-2, -1, 0, 1, 2...</p>
+                            <div class="flex justify-center mt-3">
+                                <span class="text-2xl">🌡️ -5°C ❄️ +25°C</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 p-6 rounded-xl cursor-pointer hover:shadow-lg transition-all" onclick="visitPlanet('rational')">
+                            <div class="text-center mb-4">
+                                <span class="text-4xl">🛸</span>
+                                <h3 class="text-xl font-bold text-purple-800 dark:text-purple-200">Estación de los Números Racionales (ℚ)</h3>
+                            </div>
+                            <p class="text-sm text-purple-700 dark:text-purple-300">Fracciones y decimales exactos: 1/2, 3/4, 0.25, 0.333...</p>
+                            <div class="flex justify-center mt-3">
+                                <span class="text-2xl">🍕 3/4 = 0.75</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-yellow-100 to-orange-200 dark:from-yellow-900 dark:to-orange-800 p-6 rounded-xl cursor-pointer hover:shadow-lg transition-all" onclick="visitPlanet('irrational')">
+                            <div class="text-center mb-4">
+                                <span class="text-4xl">🌌</span>
+                                <h3 class="text-xl font-bold text-orange-800 dark:text-orange-200">Nebulosa de los Números Irracionales</h3>
+                            </div>
+                            <p class="text-sm text-orange-700 dark:text-orange-300">Decimales infinitos sin patrón: π, √2, e, φ...</p>
+                            <div class="flex justify-center mt-3">
+                                <span class="text-2xl">🟢 π ≈ 3.141592...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="planetDetails" class="hidden">
+                    <div class="text-center mb-6">
+                        <button onclick="returnToGalaxy()" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                            ← Volver a la Galaxia
+                        </button>
+                    </div>
+                    
+                    <div id="planetContent" class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                        <!-- Planet content will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Global state
+        let userPoints = 0;
+        let userLevel = 1;
+        let currentStep = 0;
+        let currentExample = 1;
+        let logicValues = { P: false, Q: false };
+        let currentConnector = 'and';
+        let argumentsGame = {
+            team1Score: 0,
+            team2Score: 0,
+            currentTurn: 1,
+            currentArgument: null,
+            correctAnswer: null
+        };
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('text-gray-600', 'dark:text-gray-400', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            activeBtn.classList.add('active', 'bg-primary', 'text-white');
+            activeBtn.classList.remove('text-gray-600', 'dark:text-gray-400', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        }
+
+        // Tab button event listeners
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchTab(btn.dataset.tab);
+            });
+        });
+
+        // Points and level system
+        function addPoints(points) {
+            userPoints += points;
+            document.getElementById('totalPoints').textContent = userPoints;
+            
+            // Level up logic
+            const newLevel = Math.floor(userPoints / 100) + 1;
+            if (newLevel > userLevel) {
+                userLevel = newLevel;
+                document.getElementById('userLevel').textContent = userLevel;
+                showNotification(`¡Felicidades! Has alcanzado el nivel ${userLevel}! 🎉`, 'success');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } transform translate-x-full transition-transform duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Budget Calculator
+        function calculateBudget() {
+            const students = parseInt(document.getElementById('students').value) || 0;
+            const distance = parseInt(document.getElementById('distance').value) || 0;
+            const museumCost = parseFloat(document.getElementById('museumCost').value) || 0;
+            const foodBudget = parseFloat(document.getElementById('foodBudget').value) || 0;
+            
+            // Transport cost: $2 per km per student (round trip)
+            const transportCost = students * distance * 2 * 2;
+            const costPerStudent = museumCost + foodBudget;
+            const groupCost = students * costPerStudent + transportCost;
+            const contingencyFund = groupCost * 0.1;
+            const finalCostPerStudent = (groupCost + contingencyFund) / students;
+            const finalTotalCost = groupCost + contingencyFund;
+            
+            document.getElementById('transportCost').textContent = `$${transportCost.toFixed(2)}`;
+            document.getElementById('costPerStudent').textContent = `$${costPerStudent.toFixed(2)}`;
+            document.getElementById('groupCost').textContent = `$${groupCost.toFixed(2)}`;
+            document.getElementById('contingencyFund').textContent = `$${contingencyFund.toFixed(2)}`;
+            document.getElementById('finalCostPerStudent').textContent = `$${finalCostPerStudent.toFixed(2)}`;
+            document.getElementById('finalTotalCost').textContent = `$${finalTotalCost.toFixed(2)}`;
+            
+            addPoints(10);
+            showNotification('¡Presupuesto calculado correctamente! +10 puntos', 'success');
+        }
+
+        // Signs Rule Simulation
+        let practiceQuestions = [
+            { question: "+5 × -3", answer: false }, // negative
+            { question: "-2 × -4", answer: true },  // positive
+            { question: "+7 + -3", answer: true },  // positive
+            { question: "-6 + +2", answer: false }, // negative
+            { question: "+8 - +5", answer: true },  // positive
+            { question: "-4 - -7", answer: true }   // positive
+        ];
+        let currentPracticeIndex = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        function simulateOperation() {
+            const operation = document.getElementById('operationType').value;
+            const firstSign = document.getElementById('firstSign').value;
+            const secondSign = document.getElementById('secondSign').value;
+            const firstNum = parseInt(document.getElementById('firstNumber').value) || 5;
+            const secondNum = parseInt(document.getElementById('secondNumber').value) || 3;
+            
+            const num1 = firstSign === '+' ? firstNum : -firstNum;
+            const num2 = secondSign === '+' ? secondNum : -secondNum;
+            
+            let result;
+            let explanation;
+            
+            switch(operation) {
+                case '*':
+                    result = num1 * num2;
+                    explanation = `${firstSign}${firstNum} × ${secondSign}${secondNum} = ${result}. `;
+                    if ((firstSign === secondSign)) {
+                        explanation += "Signos iguales en multiplicación = resultado positivo.";
+                    } else {
+                        explanation += "Signos diferentes en multiplicación = resultado negativo.";
+                    }
+                    break;
+                case '+':
+                    result = num1 + num2;
+                    explanation = `${firstSign}${firstNum} + ${secondSign}${secondNum} = ${result}.`;
+                    break;
+                case '-':
+                    result = num1 - num2;
+                    explanation = `${firstSign}${firstNum} - ${secondSign}${secondNum} = ${result}.`;
+                    break;
+            }
+            
+            document.getElementById('resultDisplay').textContent = result;
+            document.getElementById('explanationText').textContent = explanation;
+            document.getElementById('operationResult').classList.remove('hidden');
+            
+            // Update number line position
+            updateNumberLine(result);
+            
+            addPoints(5);
+        }
+
+        function updateNumberLine(position) {
+            const numberLine = document.getElementById('numberPosition');
+            const percentage = Math.max(0, Math.min(100, (position + 20) / 40 * 100));
+            numberLine.style.left = `${percentage}%`;
+            
+            document.getElementById('currentPosition').textContent = position;
+            document.getElementById('step1').textContent = "Comenzamos en 0";
+            document.getElementById('step2').textContent = `Nos movemos ${position > 0 ? 'hacia la derecha' : 'hacia la izquierda'}`;
+            document.getElementById('step3').textContent = `¡Llegamos a ${position}!`;
+        }
+
+        function generateNewPracticeQuestion() {
+            currentPracticeIndex = Math.floor(Math.random() * practiceQuestions.length);
+            document.getElementById('practiceQuestion').textContent = practiceQuestions[currentPracticeIndex].question + " = ?";
+        }
+
+        function answerPractice(userAnswer) {
+            const correct = practiceQuestions[currentPracticeIndex].answer;
+            if (userAnswer === correct) {
+                correctCount++;
+                showNotification('¡Correcto! +5 puntos', 'success');
+                addPoints(5);
+            } else {
+                incorrectCount++;
+                showNotification('Incorrecto. ¡Inténtalo de nuevo!', 'error');
+            }
+            
+            document.getElementById('correctAnswers').textContent = correctCount;
+            document.getElementById('incorrectAnswers').textContent = incorrectCount;
+            
+            setTimeout(generateNewPracticeQuestion, 1000);
+        }
+
+        // Garden Calculator
+        function calculateGarden() {
+            const plantArea = parseFloat(document.getElementById('plantArea').value) || 0;
+            const grassArea = parseFloat(document.getElementById('grassArea').value) || 0;
+            const perimeter = parseFloat(document.getElementById('perimeter').value) || 0;
+            
+            const plantsCost = plantArea * 150;
+            const grassCost = grassArea * 40;
+            const fenceCost = perimeter * 350;
+            const totalCost = plantsCost + grassCost + fenceCost;
+            
+            document.getElementById('plantsCost').textContent = `$${plantsCost.toFixed(2)}`;
+            document.getElementById('grassCost').textContent = `$${grassCost.toFixed(2)}`;
+            document.getElementById('fenceCost').textContent = `$${fenceCost.toFixed(2)}`;
+            document.getElementById('totalGardenCost').textContent = `$${totalCost.toFixed(2)}`;
+            
+            addPoints(10);
+            showNotification('¡Jardín calculado correctamente! +10 puntos', 'success');
+        }
+
+        // Hierarchy of Operations
+        const examples = [
+            {
+                original: "3 + 2 × (4 + 1)² - 8 ÷ 2",
+                steps: [
+                    { expr: "3 + 2 × (4 + 1)² - 8 ÷ 2", desc: "Expresión original" },
+                    { expr: "3 + 2 × (5)² - 8 ÷ 2", desc: "Resolvemos paréntesis: 4 + 1 = 5" },
+                    { expr: "3 + 2 × 25 - 8 ÷ 2", desc: "Resolvemos potencias: 5² = 25" },
+                    { expr: "3 + 50 - 4", desc: "Resolvemos multiplicación y división: 2 × 25 = 50, 8 ÷ 2 = 4" },
+                    { expr: "49", desc: "Resolvemos suma y resta: 3 + 50 - 4 = 49" }
+                ]
+            },
+            {
+                original: "2 × (3 + 4)² - 5",
+                steps: [
+                    { expr: "2 × (3 + 4)² - 5", desc: "Expresión original" },
+                    { expr: "2 × (7)² - 5", desc: "Resolvemos paréntesis: 3 + 4 = 7" },
+                    { expr: "2 × 49 - 5", desc: "Resolvemos potencias: 7² = 49" },
+                    { expr: "98 - 5", desc: "Resolvemos multiplicación: 2 × 49 = 98" },
+                    { expr: "93", desc: "Resolvemos resta: 98 - 5 = 93" }
+                ]
+            },
+            {
+                original: "15 ÷ 3 + 2 × 4",
+                steps: [
+                    { expr: "15 ÷ 3 + 2 × 4", desc: "Expresión original" },
+                    { expr: "5 + 8", desc: "Resolvemos división y multiplicación: 15 ÷ 3 = 5, 2 × 4 = 8" },
+                    { expr: "13", desc: "Resolvemos suma: 5 + 8 = 13" }
+                ]
+            }
+        ];
+
+        function nextStep() {
+            const example = examples[currentExample - 1];
+            if (currentStep < example.steps.length - 1) {
+                currentStep++;
+                document.getElementById('currentExpression').textContent = example.steps[currentStep].expr;
+                document.getElementById('stepDescription').textContent = `Paso ${currentStep + 1}: ${example.steps[currentStep].desc}`;
+                
+                if (currentStep === example.steps.length - 1) {
+                    document.getElementById('nextStepBtn').textContent = "¡Completado! ✓";
+                    document.getElementById('nextStepBtn').disabled = true;
+                    addPoints(15);
+                    showNotification('¡Ejemplo completado! +15 puntos', 'success');
+                }
+            }
+        }
+
+        function resetExample() {
+            currentStep = 0;
+            const example = examples[currentExample - 1];
+            document.getElementById('currentExpression').textContent = example.original;
+            document.getElementById('stepDescription').textContent = "Haz clic en 'Siguiente Paso' para comenzar la resolución";
+            document.getElementById('nextStepBtn').textContent = "Siguiente Paso →";
+            document.getElementById('nextStepBtn').disabled = false;
+        }
+
+        function loadExample(exampleNum) {
+            currentExample = exampleNum;
+            resetExample();
+        }
+
+        const practiceExpressions = [
+            { expr: "6 + 3 × 2 - 1", answer: 11 },
+            { expr: "8 + 2 × 3", answer: 14 },
+            { expr: "10 - 4 ÷ 2", answer: 8 },
+            { expr: "5 × 2 + 3", answer: 13 },
+            { expr: "12 ÷ 3 - 1", answer: 3 }
+        ];
+        let currentPracticeExpression = 0;
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('userAnswer').value);
+            const correct = practiceExpressions[currentPracticeExpression].answer;
+            
+            const feedback = document.getElementById('answerFeedback');
+            if (userAnswer === correct) {
+                feedback.className = 'p-4 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+                feedback.textContent = '¡Correcto! Excelente trabajo. +20 puntos';
+                feedback.classList.remove('hidden');
+                addPoints(20);
+            } else {
+                feedback.className = 'p-4 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+                feedback.textContent = `Incorrecto. La respuesta correcta es ${correct}. ¡Sigue practicando!`;
+                feedback.classList.remove('hidden');
+            }
+        }
+
+        function showSolution() {
+            const current = practiceExpressions[currentPracticeExpression];
+            const solution = document.getElementById('solutionSteps');
+            const content = document.getElementById('solutionContent');
+            
+            // Generate step-by-step solution
+            content.innerHTML = `
+                <div class="font-semibold">Expresión: ${current.expr}</div>
+                <div>Siguiendo la jerarquía de operaciones...</div>
+                <div>Resultado: ${current.answer}</div>
+            `;
+            
+            solution.classList.remove('hidden');
+        }
+
+        function newExercise() {
+            currentPracticeExpression = Math.floor(Math.random() * practiceExpressions.length);
+            document.getElementById('practiceExpression').textContent = practiceExpressions[currentPracticeExpression].expr;
+            document.getElementById('userAnswer').value = '';
+            document.getElementById('answerFeedback').classList.add('hidden');
+            document.getElementById('solutionSteps').classList.add('hidden');
+        }
+
+        // Logic Connectors
+        function selectConnector(connector) {
+            currentConnector = connector;
+            const operators = {
+                'and': '∧',
+                'or': '∨',
+                'not': '¬',
+                'implies': '→',
+                'iff': '↔'
+            };
+            
+            document.getElementById('circuitOperator').textContent = operators[connector];
+            document.getElementById('resultHeader').textContent = `P ${operators[connector]} Q`;
+            
+            updateTruthTable();
+            updateCircuitDisplay();
+            updateLogicExplanation();
+            
+            // Update button states
+            document.querySelectorAll('.connector-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            event.target.closest('.connector-btn').classList.add('ring-2', 'ring-blue-500');
+        }
+
+        function setLogicValue(variable, value) {
+            logicValues[variable] = value;
+            
+            // Update button states
+            const trueBtn = document.getElementById(`${variable.toLowerCase()}True`);
+            const falseBtn = document.getElementById(`${variable.toLowerCase()}False`);
+            
+            if (value) {
+                trueBtn.className = 'flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600';
+                falseBtn.className = 'flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-red-600';
+            } else {
+                trueBtn.className = 'flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-green-600';
+                falseBtn.className = 'flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600';
+            }
+            
+            updateCircuitDisplay();
+            updateCurrentState();
+        }
+
+        function updateTruthTable() {
+            const tbody = document.getElementById('truthTableBody');
+            const combinations = [
+                [true, true], [true, false], [false, true], [false, false]
+            ];
+            
+            tbody.innerHTML = combinations.map(([p, q]) => {
+                const result = calculateLogicResult(p, q);
+                return `
+                    <tr>
+                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">${p ? 'V' : 'F'}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center">${q ? 'V' : 'F'}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 p-2 text-center ${result ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}">${result ? 'V' : 'F'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateLogicResult(p, q) {
+            switch(currentConnector) {
+                case 'and': return p && q;
+                case 'or': return p || q;
+                case 'not': return !p;
+                case 'implies': return !p || q;
+                case 'iff': return p === q;
+                default: return false;
+            }
+        }
+
+        function updateCircuitDisplay() {
+            const p = logicValues.P;
+            const q = logicValues.Q;
+            const result = calculateLogicResult(p, q);
+            
+            document.getElementById('circuitP').className = `w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${p ? 'bg-green-500' : 'bg-red-500'}`;
+            document.getElementById('circuitQ').className = `w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${q ? 'bg-green-500' : 'bg-red-500'}`;
+            document.getElementById('circuitResult').className = `w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${result ? 'bg-green-500' : 'bg-red-500'}`;
+            
+            document.getElementById('circuitResult').textContent = result ? '1' : '0';
+        }
+
+        function updateCurrentState() {
+            const p = logicValues.P;
+            const q = logicValues.Q;
+            const result = calculateLogicResult(p, q);
+            
+            document.getElementById('currentP').textContent = p ? 'VERDADERO' : 'FALSO';
+            document.getElementById('currentQ').textContent = q ? 'VERDADERO' : 'FALSO';
+            document.getElementById('currentResult').textContent = result ? 'VERDADERO' : 'FALSO';
+        }
+
+        function updateLogicExplanation() {
+            const explanations = {
+                'and': 'La conjunción (AND) es verdadera solo cuando ambas proposiciones P y Q son verdaderas. Es como decir "llueve Y hace frío" - ambas condiciones deben cumplirse.',
+                'or': 'La disyunción (OR) es verdadera cuando al menos una de las proposiciones es verdadera. Es como decir "voy al cine O voy al parque" - con que haga una actividad es suficiente.',
+                'not': 'La negación (NOT) invierte el valor de verdad de la proposición P. Si P es verdadero, ¬P es falso, y viceversa.',
+                'implies': 'La implicación (→) es falsa solo cuando P es verdadero y Q es falso. Es como una promesa: "Si llueve, entonces me quedo en casa".',
+                'iff': 'El bicondicional (↔) es verdadero cuando ambas proposiciones tienen el mismo valor de verdad. Ambas son verdaderas o ambas son falsas.'
+            };
+            
+            document.getElementById('logicExplanation').textContent = explanations[currentConnector];
+        }
+
+        // Arguments Game
+        const arguments = [
+            {
+                text: "Todos los pájaros tienen plumas. El canario es un pájaro. Por lo tanto, el canario tiene plumas.",
+                type: "deductive",
+                explanation: "Es deductivo porque va de una regla general (todos los pájaros tienen plumas) a un caso específico (el canario)."
+            },
+            {
+                text: "He visto 10 cisnes y todos eran blancos. Por lo tanto, todos los cisnes son blancos.",
+                type: "inductive",
+                explanation: "Es inductivo porque va de observaciones específicas (10 cisnes blancos) a una conclusión general (todos los cisnes son blancos)."
+            },
+            {
+                text: "Todos los mamíferos son vertebrados. El perro es un mamífero. Por lo tanto, el perro es vertebrado.",
+                type: "deductive",
+                explanation: "Es deductivo porque aplica una regla general (mamíferos son vertebrados) a un caso específico (el perro)."
+            },
+            {
+                text: "En mi clase, 8 de 10 estudiantes prefieren matemáticas. Por lo tanto, la mayoría de estudiantes prefieren matemáticas.",
+                type: "inductive",
+                explanation: "Es inductivo porque generaliza a partir de una muestra específica (mi clase) hacia una población más amplia."
+            },
+            {
+                text: "Si llueve, las calles se mojan. Está lloviendo. Por lo tanto, las calles están mojadas.",
+                type: "deductive",
+                explanation: "Es deductivo porque sigue un patrón lógico de premisas que llevan necesariamente a la conclusión."
+            },
+            {
+                text: "Cada vez que como picante, me duele el estómago. Por lo tanto, la comida picante me hace daño.",
+                type: "inductive",
+                explanation: "Es inductivo porque se basa en experiencias repetidas para llegar a una conclusión general."
+            }
+        ];
+
+        function rollDice() {
+            const diceValue = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('diceResult').textContent = `🎲 ${diceValue}`;
+            document.getElementById('diceMessage').textContent = `¡Sacaste un ${diceValue}!`;
+            
+            // Select random argument
+            const randomArgument = arguments[Math.floor(Math.random() * arguments.length)];
+            argumentsGame.currentArgument = randomArgument;
+            
+            document.getElementById('currentArgument').textContent = randomArgument.text;
+            
+            // Enable argument buttons
+            document.querySelectorAll('.argument-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+        }
+
+        function selectArgumentType(type) {
+            const correct = argumentsGame.currentArgument.type === type;
+            const feedback = document.getElementById('argumentFeedback');
+            
+            if (correct) {
+                feedback.className = 'p-4 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+                feedback.innerHTML = `
+                    <h4 class="font-semibold mb-2">✅ ¡Correcto!</h4>
+                    <p>${argumentsGame.currentArgument.explanation}</p>
+                `;
+                
+                // Add points to current team
+                if (argumentsGame.currentTurn === 1) {
+                    argumentsGame.team1Score += 10;
+                    document.getElementById('team1Score').textContent = argumentsGame.team1Score;
+                } else {
+                    argumentsGame.team2Score += 10;
+                    document.getElementById('team2Score').textContent = argumentsGame.team2Score;
+                }
+                
+                addPoints(15);
+                showNotification(`¡Correcto! Equipo ${argumentsGame.currentTurn} gana 10 puntos`, 'success');
+            } else {
+                feedback.className = 'p-4 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+                feedback.innerHTML = `
+                    <h4 class="font-semibold mb-2">❌ Incorrecto</h4>
+                    <p>${argumentsGame.currentArgument.explanation}</p>
+                `;
+                showNotification('Incorrecto. ¡Sigue intentando!', 'error');
+            }
+            
+            feedback.classList.remove('hidden');
+            document.getElementById('continueBtn').disabled = false;
+            
+            // Disable argument buttons
+            document.querySelectorAll('.argument-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+        }
+
+        function continueGame() {
+            // Switch turns
+            argumentsGame.currentTurn = argumentsGame.currentTurn === 1 ? 2 : 1;
+            document.getElementById('currentTurn').textContent = `Equipo ${argumentsGame.currentTurn}`;
+            
+            // Reset for next round
+            document.getElementById('currentArgument').textContent = 'Lanza el dado para obtener un argumento...';
+            document.getElementById('argumentFeedback').classList.add('hidden');
+            document.getElementById('continueBtn').disabled = true;
+            document.getElementById('diceResult').textContent = '🎲';
+            document.getElementById('diceMessage').textContent = '¡Lanza el dado para comenzar!';
+        }
+
+        // Numbers Galaxy
+        function startGalacticJourney() {
+            showNotification('¡Bienvenido a la Galaxia Numérica! Explora cada planeta haciendo clic en ellos.', 'success');
+            addPoints(5);
+        }
+
+        function visitPlanet(planetType) {
+            const planetData = {
+                natural: {
+                    title: "🌍 Planeta de los Números Naturales (ℕ)",
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">¡Bienvenido al primer destino!</h3>
+                        <p class="mb-4">Aquí habitan los números más básicos y amigables del universo matemático. Los números naturales son los primeros que aprende la humanidad: son positivos, enteros y se usan para contar objetos, personas, días, etc.</p>
+                        
+                        <div class="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-4">
+                            <h4 class="font-semibold mb-2">🏠 Habitantes:</h4>
+                            <p class="text-2xl font-mono">1, 2, 3, 4, 5, 6, 7, 8, 9, 10... ¡Hasta el infinito!</p>
+                        </div>
+                        
+                        <div class="text-center mb-4">
+                            <span class="text-4xl">🍎🍎🍎🍎🍎</span>
+                            <p class="text-sm">Contar manzanas: 1, 2, 3, 4, 5</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded">
+                                <strong>📚 Ejemplo 1:</strong> Si cuentas tus libros y tienes 5, estás usando un número natural. ¡Simple y útil!
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded">
+                                <strong>🎂 Ejemplo 2:</strong> En tu cumpleaños número 15, el "15" es un número natural que indica cuántos años has vivido.
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded">
+                                <strong>⚽ Ejemplo 3:</strong> Un equipo de fútbol anota 3 goles en un partido. El número 3 es natural.
+                            </div>
+                        </div>
+                    `
+                },
+                integer: {
+                    title: "🌐 Planeta de los Números Enteros (ℤ)",
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">Este planeta es más diverso y completo</h3>
+                        <p class="mb-4">Además de los números naturales, aquí también habitan los números negativos y el número cero. Los números enteros son fundamentales para expresar situaciones de la vida real.</p>
+                        
+                        <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg mb-4">
+                            <h4 class="font-semibold mb-2">🏠 Habitantes:</h4>
+                            <p class="text-2xl font-mono">...-3, -2, -1, 0, 1, 2, 3...</p>
+                            <p class="text-sm">Negativos, cero y positivos</p>
+                        </div>
+                        
+                        <div class="text-center mb-4">
+                            <span class="text-4xl">🌡️ -5°C ❄️ +25°C</span>
+                            <p class="text-sm">Temperaturas: negativas y positivas</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-green-50 dark:bg-green-900 p-3 rounded">
+                                <strong>💰 Ejemplo 1:</strong> Si tienes $10 pero debes $3, tu balance es +7. Los números positivos y negativos son enteros.
+                            </div>
+                            <div class="bg-green-50 dark:bg-green-900 p-3 rounded">
+                                <strong>🏔️ Ejemplo 2:</strong> El nivel del mar es 0 metros. Una montaña está a +2000m y una fosa marina a -3000m.
+                            </div>
+                            <div class="bg-green-50 dark:bg-green-900 p-3 rounded">
+                                <strong>❄️ Ejemplo 3:</strong> En invierno la temperatura puede ser -5°C (bajo cero) o +10°C (sobre cero).
+                            </div>
+                        </div>
+                    `
+                },
+                rational: {
+                    title: "🛸 Estación de los Números Racionales (ℚ)",
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">¡Bienvenido a la estación espacial más precisa!</h3>
+                        <p class="mb-4">Los números racionales son aquellos que se pueden expresar como una fracción a/b donde a y b son enteros y b≠0. Incluyen fracciones, decimales exactos y decimales periódicos.</p>
+                        
+                        <div class="bg-purple-100 dark:bg-purple-900 p-4 rounded-lg mb-4">
+                            <h4 class="font-semibold mb-2">🏠 Habitantes:</h4>
+                            <p class="text-2xl font-mono">1/2, 3/4, -2/3, 0.25, 0.333...</p>
+                            <p class="text-sm">Fracciones y decimales exactos/periódicos</p>
+                        </div>
+                        
+                        <div class="text-center mb-4">
+                            <span class="text-4xl">🍕</span>
+                            <p class="text-sm">Pizza: 3/4 = 0.75</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-yellow-50 dark:bg-yellow-900 p-3 rounded">
+                                <strong>🍕 Ejemplo 1:</strong> Compartes una pizza entre 4 amigos. Cada uno recibe 1/4 = 0.25 de la pizza. ¡Eso es racional!
+                            </div>
+                            <div class="bg-yellow-50 dark:bg-yellow-900 p-3 rounded">
+                                <strong>📏 Ejemplo 2:</strong> Una tabla mide 2.5 metros = 5/2 metros. Los decimales exactos son racionales.
+                            </div>
+                            <div class="bg-yellow-50 dark:bg-yellow-900 p-3 rounded">
+                                <strong>💧 Ejemplo 3:</strong> Un vaso está 2/3 lleno de agua, que equivale a 0.666... (decimal periódico).
+                            </div>
+                        </div>
+                    `
+                },
+                irrational: {
+                    title: "🌌 Nebulosa de los Números Irracionales",
+                    content: `
+                        <h3 class="text-xl font-bold mb-4">¡Los números más misteriosos y fascinantes!</h3>
+                        <p class="mb-4">Los números irracionales NO se pueden expresar como fracciones simples a/b. Sus decimales son infinitos, no se repiten y no siguen ningún patrón predecible.</p>
+                        
+                        <div class="bg-orange-100 dark:bg-orange-900 p-4 rounded-lg mb-4">
+                            <h4 class="font-semibold mb-2">🏠 Habitantes famosos:</h4>
+                            <div class="space-y-2 font-mono">
+                                <p>π ≈ 3.141592653...</p>
+                                <p>√2 ≈ 1.414213562...</p>
+                                <p>e ≈ 2.718281828...</p>
+                                <p>φ ≈ 1.618033988...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mb-4">
+                            <span class="text-4xl">🟢 π</span>
+                            <p class="text-sm">Círculo: Circunferencia ÷ Diámetro = π</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-red-50 dark:bg-red-900 p-3 rounded">
+                                <strong>🟢 Ejemplo 1:</strong> La relación entre la circunferencia y el diámetro de cualquier círculo es π (pi). ¡Un irracional fascinante!
+                            </div>
+                            <div class="bg-red-50 dark:bg-red-900 p-3 rounded">
+                                <strong>📐 Ejemplo 2:</strong> La diagonal de un cuadrado de lado 1 mide √2. No se puede expresar como fracción exacta.
+                            </div>
+                            <div class="bg-red-50 dark:bg-red-900 p-3 rounded">
+                                <strong>🌻 Ejemplo 3:</strong> La proporción áurea φ aparece en la naturaleza: girasoles, caracolas, galaxias. ¡Es irracional!
+                            </div>
+                        </div>
+                    `
+                }
+            };
+            
+            const planet = planetData[planetType];
+            document.getElementById('planetContent').innerHTML = `
+                <h2 class="text-2xl font-bold mb-6">${planet.title}</h2>
+                ${planet.content}
+            `;
+            
+            document.getElementById('galaxyContent').classList.add('hidden');
+            document.getElementById('planetDetails').classList.remove('hidden');
+            
+            addPoints(10);
+            showNotification(`¡Has explorado ${planet.title}! +10 puntos`, 'success');
+        }
+
+        function returnToGalaxy() {
+            document.getElementById('galaxyContent').classList.remove('hidden');
+            document.getElementById('planetDetails').classList.add('hidden');
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            generateNewPracticeQuestion();
+            newExercise();
+            updateTruthTable();
+            updateCircuitDisplay();
+            updateCurrentState();
+            updateLogicExplanation();
+        });
+    </script>
+</body>
+</html>
